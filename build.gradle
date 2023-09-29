@@ -2,7 +2,7 @@ plugins {
     id 'java'
 }
 
-group 'org.example'
+group 'ldt.vector-db'
 version '1.0-SNAPSHOT'
 
 repositories {
@@ -12,6 +12,13 @@ repositories {
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+
+    // java-lsh библиотека для хеширования векторов.
+//    implementation 'info.debatty:java-lsh:0.12'
+
+    // https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java
+    implementation group: 'com.google.protobuf', name: 'protobuf-java', version: '3.24.3'
+
 }
 
 test {

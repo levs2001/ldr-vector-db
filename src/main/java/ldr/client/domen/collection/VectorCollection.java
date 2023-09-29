@@ -10,12 +10,12 @@ public class VectorCollection implements IVectorCollection {
 
     @Override
     public void add(Embedding embedding) throws CollectionException {
-
+        // Сразу сохраняет на диск и перестраивает индексы (и другие штуки в ram), поскольку скорость не важна
     }
 
     @Override
     public void add(Collection<Embedding> embeddings) throws CollectionException {
-
+        // Сразу сохраняет на диск и перестраивает индексы (и другие штуки в ram)
     }
 
     @Override
@@ -29,12 +29,13 @@ public class VectorCollection implements IVectorCollection {
     }
 
     @Override
-    public VectorCollectionResult query(List<Double> vec, long maxNeighborsCount) {
+    public VectorCollectionResult query(List<Double> vector, long maxNeighborsCount) {
+        // Скорость важна, поэтому в ram должно быть что-то, помогающее искать
         return null;
     }
 
     @Override
-    public VectorCollectionResult query(List<Double> vec, long maxNeighborsCount, String filter) {
+    public VectorCollectionResult query(List<Double> vector, long maxNeighborsCount, String filter) {
         return null;
     }
 

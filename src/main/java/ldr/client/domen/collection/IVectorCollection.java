@@ -15,9 +15,9 @@ public interface IVectorCollection {
 
     void update(List<Long> ids, List<Long> newEmbeddings) throws CollectionException;
 
-    VectorCollectionResult query(List<Double> vec, long maxNeighborsCount) throws CollectionException;
+    VectorCollectionResult query(List<Double> vector, long maxNeighborsCount) throws CollectionException;
 
-    VectorCollectionResult query(List<Double> vec, long maxNeighborsCount, String filter) throws CollectionException;
+    VectorCollectionResult query(List<Double> vector, long maxNeighborsCount, String filter) throws CollectionException;
 
     void delete(long id) throws CollectionException;
 
