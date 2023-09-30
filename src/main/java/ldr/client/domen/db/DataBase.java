@@ -1,6 +1,19 @@
 package ldr.client.domen.db;
 
 public class DataBase implements IDataBase {
+    private DataBase() {
+
+    }
+
+    public static IDataBase create() {
+        return new DataBase();
+    }
+
+    // TODO: Exception if not exists.
+    public static IDataBase load() throws DataBaseException {
+        return new DataBase();
+    }
+
     @Override
     public void getCollection(String name) throws DataBaseException {
 
@@ -12,8 +25,8 @@ public class DataBase implements IDataBase {
 
         // В файловой системе создается новая папка с таким name
         // В этой папке будет мета файл
-            // В мета файле прописываем размер векторов (dimension)
-            // Метрику
+        // В мета файле прописываем размер векторов (dimension)
+        // Метрику
         //
     }
 
@@ -24,6 +37,11 @@ public class DataBase implements IDataBase {
 
     @Override
     public void renameCollection(String oldName, String newName) throws DataBaseException {
+
+    }
+
+    @Override
+    public void close() throws DataBaseException {
 
     }
 }

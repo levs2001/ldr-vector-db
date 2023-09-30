@@ -8,4 +8,6 @@ public interface IDataBase {
     void deleteCollection(String name) throws DataBaseException;
 
     void renameCollection(String oldName, String newName) throws DataBaseException;
+
+    void close() throws DataBaseException;
 }

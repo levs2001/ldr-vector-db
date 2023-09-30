@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import ldr.client.domen.Embedding;
+import ldr.server.serialization.my.MyEmbeddingSerialization;
 
 class MyEmbeddingSerializationTest {
     TestFromBytesToBytesUtil testUtil = new TestFromBytesToBytesUtil(new MyEmbeddingSerialization());

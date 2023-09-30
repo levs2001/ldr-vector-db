@@ -17,6 +17,9 @@ public interface IVectorCollection {
 
     VectorCollectionResult query(List<Double> vector, long maxNeighborsCount) throws CollectionException;
 
+    /**
+     * Own rules for filter, for ex meta1Key:eq:meta1Val
+     */
     VectorCollectionResult query(List<Double> vector, long maxNeighborsCount, String filter) throws CollectionException;
 
     void delete(long id) throws CollectionException;
@@ -24,4 +27,6 @@ public interface IVectorCollection {
     void delete(Collection<Long> ids) throws CollectionException;
 
     void delete(String filter) throws CollectionException;
+
+    void close() throws CollectionException;
 }
