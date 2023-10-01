@@ -1,29 +1,35 @@
 package ldr.server.serialization.my;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
 public class VarLongEncoder implements DataEncoder<Long> {
+    private static final long MAX_VALUE = Long.MAX_VALUE / 2;
+    private static final long MIN_VALUE = Long.MIN_VALUE / 2;
+    // 01111111
+    private static final byte SEGMENT_BITS =  0x7F;
+    // 10000000
+    private static final int CONTINUE_BIT = 0x80;
+
     @Override
     public byte[] encode(Long value) {
-        // Zig Zag
-        if (value > Long.MAX_VALUE / 2 || value < Long.MIN_VALUE / 2) {
+        if (value > MAX_VALUE || value < MIN_VALUE) {
             throw new RuntimeException("Value incorrect diapason should be between " +
-                    Long.MIN_VALUE / 2 + "and " + Long.MAX_VALUE / 2 + " your value " + value);
+                    MIN_VALUE + " and " + MAX_VALUE + ", your value " + value);
         }
+
+        // Zig Zag
         long unsignedValue = (value << 1) ^ (value >> 63);
 
         List<Byte> encodedBytes = new ArrayList<>();
-
         //пока есть байты
         while (unsignedValue > 0) {
             // В каждом байте храним 7 бит числа и бит продолжения
-            byte b = (byte) (unsignedValue & 0x7F);
+            byte b = (byte) (unsignedValue & SEGMENT_BITS);
             unsignedValue >>= 7;
             // Устанавливаем бит продолжения, если есть ещё группы для кодирования
             if (unsignedValue > 0) {
-                b |= 0x80;
+                b |= CONTINUE_BIT;
             }
             encodedBytes.add(b);
         }
@@ -43,18 +49,18 @@ public class VarLongEncoder implements DataEncoder<Long> {
     @Override
     public Long decode(byte[] encodedBytes) {
         long result = 0;
-        long shift = 0;
+        byte shift = 0;
 
         for (byte byteValue : encodedBytes) {
 
             // Очищаем бит продолжения и объединяем с результатом
-            result |= (long) (byteValue & 0x7F) << shift;
+            result |= (long) (byteValue & SEGMENT_BITS) << shift;
 
             // Сдвиг на 7 бит для обработки следующего байта
             shift += 7;
 
             // Если бит продолжения равен 0, это последний байт числа
-            if ((byteValue & 0x80) == 0) {
+            if ((byteValue & CONTINUE_BIT) == 0) {
                 break;
             }
         }
