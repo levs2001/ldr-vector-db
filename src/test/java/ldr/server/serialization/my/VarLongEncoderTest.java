@@ -1,10 +1,10 @@
 package ldr.server.serialization.my;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class VarLongEncoderTest {
@@ -13,11 +13,7 @@ class VarLongEncoderTest {
         List<Long> expList = List.of(Long.MAX_VALUE / 2, Long.MIN_VALUE / 2, -1231231L, 123L, 0L);
         DataEncoder<Long> coder = new VarLongEncoder();
 
-        for (long x : expList) {
-            byte[] encodedBytes = coder.encode(x);
-            long decodedValue = coder.decode(encodedBytes);
-            assertEquals(x, decodedValue);
-        }
+        CoderTestUtil.testCoding(expList, coder);
     }
 
     @Test
@@ -28,5 +24,15 @@ class VarLongEncoderTest {
         for (long x : unsupported) {
             assertThrows(RuntimeException.class, () -> coder.encode(x));
         }
+    }
+
+    @Test
+    public void testTooManyBytes() {
+        // Because one bit of all bytes is continued flag, the size can be Long.BYTES + 1 max.
+        byte[] bytes = new byte[Long.BYTES + 2];
+        Arrays.fill(bytes, (byte) VarLongEncoder.CONTINUE_BIT);
+        DataEncoder<Long> coder = new VarLongEncoder();
+
+        assertThrows(RuntimeException.class, () -> coder.decode(bytes));
     }
 }

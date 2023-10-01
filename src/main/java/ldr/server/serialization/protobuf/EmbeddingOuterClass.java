@@ -24,19 +24,19 @@ public final class EmbeddingOuterClass {
     long getId();
 
     /**
-     * <code>repeated double value = 2;</code>
-     * @return A list containing the value.
+     * <code>repeated double vector = 2;</code>
+     * @return A list containing the vector.
      */
     java.util.List<java.lang.Double> getValueList();
     /**
-     * <code>repeated double value = 2;</code>
-     * @return The count of value.
+     * <code>repeated double vector = 2;</code>
+     * @return The count of vector.
      */
     int getValueCount();
     /**
-     * <code>repeated double value = 2;</code>
+     * <code>repeated double vector = 2;</code>
      * @param index The index of the element to return.
-     * @return The value at the given index.
+     * @return The vector at the given index.
      */
     double getValue(int index);
 
@@ -138,8 +138,8 @@ java.lang.String defaultValue);
     private com.google.protobuf.Internal.DoubleList value_ =
         emptyDoubleList();
     /**
-     * <code>repeated double value = 2;</code>
-     * @return A list containing the value.
+     * <code>repeated double vector = 2;</code>
+     * @return A list containing the vector.
      */
     @java.lang.Override
     public java.util.List<java.lang.Double>
@@ -147,16 +147,16 @@ java.lang.String defaultValue);
       return value_;
     }
     /**
-     * <code>repeated double value = 2;</code>
-     * @return The count of value.
+     * <code>repeated double vector = 2;</code>
+     * @return The count of vector.
      */
     public int getValueCount() {
       return value_.size();
     }
     /**
-     * <code>repeated double value = 2;</code>
+     * <code>repeated double vector = 2;</code>
      * @param index The index of the element to return.
-     * @return The value at the given index.
+     * @return The vector at the given index.
      */
     public double getValue(int index) {
       return value_.getDouble(index);
@@ -733,8 +733,8 @@ java.lang.String defaultValue) {
         bitField0_ |= 0x00000002;
       }
       /**
-       * <code>repeated double value = 2;</code>
-       * @return A list containing the value.
+       * <code>repeated double vector = 2;</code>
+       * @return A list containing the vector.
        */
       public java.util.List<java.lang.Double>
           getValueList() {
@@ -742,24 +742,24 @@ java.lang.String defaultValue) {
         return value_;
       }
       /**
-       * <code>repeated double value = 2;</code>
-       * @return The count of value.
+       * <code>repeated double vector = 2;</code>
+       * @return The count of vector.
        */
       public int getValueCount() {
         return value_.size();
       }
       /**
-       * <code>repeated double value = 2;</code>
+       * <code>repeated double vector = 2;</code>
        * @param index The index of the element to return.
-       * @return The value at the given index.
+       * @return The vector at the given index.
        */
       public double getValue(int index) {
         return value_.getDouble(index);
       }
       /**
-       * <code>repeated double value = 2;</code>
-       * @param index The index to set the value at.
-       * @param value The value to set.
+       * <code>repeated double vector = 2;</code>
+       * @param index The index to set the vector at.
+       * @param value The vector to set.
        * @return This builder for chaining.
        */
       public Builder setValue(
@@ -772,8 +772,8 @@ java.lang.String defaultValue) {
         return this;
       }
       /**
-       * <code>repeated double value = 2;</code>
-       * @param value The value to add.
+       * <code>repeated double vector = 2;</code>
+       * @param value The vector to add.
        * @return This builder for chaining.
        */
       public Builder addValue(double value) {
@@ -785,8 +785,8 @@ java.lang.String defaultValue) {
         return this;
       }
       /**
-       * <code>repeated double value = 2;</code>
-       * @param values The value to add.
+       * <code>repeated double vector = 2;</code>
+       * @param values The vector to add.
        * @return This builder for chaining.
        */
       public Builder addAllValue(
@@ -799,7 +799,7 @@ java.lang.String defaultValue) {
         return this;
       }
       /**
-       * <code>repeated double value = 2;</code>
+       * <code>repeated double vector = 2;</code>
        * @return This builder for chaining.
        */
       public Builder clearValue() {
@@ -919,7 +919,7 @@ java.lang.String defaultValue) {
           java.lang.String key,
           java.lang.String value) {
         if (key == null) { throw new NullPointerException("map key"); }
-        if (value == null) { throw new NullPointerException("map value"); }
+        if (value == null) { throw new NullPointerException("map vector"); }
         internalGetMutableMetas().getMutableMap()
             .put(key, value);
         bitField0_ |= 0x00000004;

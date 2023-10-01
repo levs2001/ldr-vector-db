@@ -4,18 +4,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class VarLongEncoder implements DataEncoder<Long> {
+    // 10000000
+    static final int CONTINUE_BIT = 0x80;
     private static final long MAX_VALUE = Long.MAX_VALUE / 2;
     private static final long MIN_VALUE = Long.MIN_VALUE / 2;
     // 01111111
-    private static final byte SEGMENT_BITS =  0x7F;
-    // 10000000
-    private static final int CONTINUE_BIT = 0x80;
+    private static final byte SEGMENT_BITS = 0x7F;
 
     @Override
     public byte[] encode(Long value) {
+        // We cast long to unsigned vector long, so diapason is smaller than long in 2 times.
         if (value > MAX_VALUE || value < MIN_VALUE) {
             throw new RuntimeException("Value incorrect diapason should be between " +
-                    MIN_VALUE + " and " + MAX_VALUE + ", your value " + value);
+                    MIN_VALUE + " and " + MAX_VALUE + ", your vector " + value);
         }
 
         // Zig Zag
@@ -47,12 +48,13 @@ public class VarLongEncoder implements DataEncoder<Long> {
     }
 
     @Override
-    public Long decode(byte[] encodedBytes) {
+    public DecodeResult<Long> decode(byte[] encodedBytes, int from) {
         long result = 0;
         byte shift = 0;
 
-        for (byte byteValue : encodedBytes) {
-
+        int bytesCount;
+        for (bytesCount = 0; bytesCount < encodedBytes.length; bytesCount++) {
+            byte byteValue = encodedBytes[bytesCount + from];
             // Очищаем бит продолжения и объединяем с результатом
             result |= (long) (byteValue & SEGMENT_BITS) << shift;
 
@@ -64,9 +66,15 @@ public class VarLongEncoder implements DataEncoder<Long> {
                 break;
             }
         }
+        // First byte was in zero index
+        bytesCount += 1;
+
+        if (bytesCount > Long.BYTES + 1) {
+            throw new RuntimeException("Too many bytes in VarLong");
+        }
 
         // Раскодирование zig zag
-        return (result >> 1) ^ (-(result & 1));
+        return new DecodeResult<>((result >> 1) ^ (-(result & 1)), bytesCount);
     }
 
 }
