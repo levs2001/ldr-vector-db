@@ -1,0 +1,13 @@
+package ldr.client.domen.db;
+
+public interface IDataBase {
+    void getCollection(String name) throws DataBaseException;
+
+    void createCollection(String name, int dimension, Metric metric) throws DataBaseException;
+
+    void deleteCollection(String name) throws DataBaseException;
+
+    void renameCollection(String oldName, String newName) throws DataBaseException;
+
+    void close() throws DataBaseException;
+}
