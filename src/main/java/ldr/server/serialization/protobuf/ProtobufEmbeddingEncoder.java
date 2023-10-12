@@ -1,5 +1,7 @@
 package ldr.server.serialization.protobuf;
 
+import java.util.Arrays;
+
 import org.apache.commons.lang3.NotImplementedException;
 
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -20,7 +22,11 @@ public class ProtobufEmbeddingEncoder implements DataEncoder<Embedding> {
         }
 
         return new DecodeResult<>(
-                new Embedding(parsedEmbedding.getId(), parsedEmbedding.getValueList(), parsedEmbedding.getMetasMap()),
+                new Embedding(
+                        parsedEmbedding.getId(),
+                        parsedEmbedding.getValueList().stream().mapToDouble(Double::doubleValue).toArray(),
+                        parsedEmbedding.getMetasMap()
+                ),
                 bytes.length
         );
     }
@@ -34,7 +40,7 @@ public class ProtobufEmbeddingEncoder implements DataEncoder<Embedding> {
     public byte[] encode(Embedding embedding) {
         return EmbeddingOuterClass.Embedding.newBuilder()
                 .setId(embedding.id())
-                .addAllValue(embedding.vector())
+                .addAllValue(Arrays.stream(embedding.vector()).boxed().toList())
                 .putAllMetas(embedding.metas())
                 .build()
                 .toByteArray();
