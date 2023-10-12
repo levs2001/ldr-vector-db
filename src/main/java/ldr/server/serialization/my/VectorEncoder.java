@@ -3,15 +3,15 @@ package ldr.server.serialization.my;
 import java.util.ArrayList;
 import java.util.List;
 
-public class VectorEncoder implements DataEncoder<List<Double>> {
+public class VectorEncoder implements DataEncoder<double[]> {
     DataEncoder<Integer> intCoder = new VarIntEncoder();
     DataEncoder<Double> doubleEncoder = new DoubleEncoder();
 
     @Override
-    public byte[] encode(List<Double> data) {
-        List<byte[]> bytesList = new ArrayList<>(data.size() + 1);
+    public byte[] encode(double[] data) {
+        List<byte[]> bytesList = new ArrayList<>(data.length + 1);
         int sumBytesCount = 0;
-        sumBytesCount += putToList(bytesList, data.size(), intCoder);
+        sumBytesCount += putToList(bytesList, data.length, intCoder);
         for (double el : data) {
             sumBytesCount += putToList(bytesList, el, doubleEncoder);
         }
@@ -23,14 +23,14 @@ public class VectorEncoder implements DataEncoder<List<Double>> {
     }
 
     @Override
-    public DecodeResult<List<Double>> decode(byte[] bytes, int from) {
+    public DecodeResult<double[]> decode(byte[] bytes, int from) {
         DecodeResult<Integer> sizeDecode = intCoder.decode(bytes, from);
-        List<Double> result = new ArrayList<>(sizeDecode.result());
+        double[] result = new double[sizeDecode.result()];
         int offset = from + sizeDecode.bytesCount();
         for (int i = 0; i < sizeDecode.result(); i++) {
             DecodeResult<Double> valDec = doubleEncoder.decode(bytes, offset);
             offset += valDec.bytesCount();
-            result.add(valDec.result());
+            result[i] = valDec.result();
         }
 
         return new DecodeResult<>(result, offset - from);

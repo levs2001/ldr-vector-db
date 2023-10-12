@@ -91,10 +91,10 @@ public class TestProtobufComparsion {
         return result;
     }
 
-    private List<Double> generateVector(int dimension) {
-        List<Double> vector = new ArrayList<>();
+    private double[] generateVector(int dimension) {
+        double[] vector = new double[dimension];
         for (int i = 0; i < dimension; i++) {
-            vector.add(rand.nextDouble());
+            vector[i] = rand.nextDouble();
         }
 
         return vector;
