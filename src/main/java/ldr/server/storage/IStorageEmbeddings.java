@@ -5,11 +5,7 @@ import java.util.List;
 
 import ldr.client.domen.Embedding;
 
-/**
- * Умеет хранить Embedding-и.
- */
-public interface IStorageEmbeddings {
-    Embedding get(long id);
+public interface IStorageEmbeddings extends IEmbeddingKeeper {
     List<Embedding> get(List<Long> ids);
 
     /**
