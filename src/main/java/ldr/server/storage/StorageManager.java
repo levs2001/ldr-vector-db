@@ -1,9 +1,12 @@
 package ldr.server.storage;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import ldr.client.domen.Embedding;
+import ldr.client.domen.collection.CollectionException;
 import ldr.server.storage.mem.IMemoryEmbeddings;
 import ldr.server.storage.mem.MemoryEmbeddings;
 
@@ -20,7 +23,7 @@ public class StorageManager implements IEmbeddingKeeper {
         this.inMem = new MemoryEmbeddings(config.flushThresholdBytes, this::flush);
     }
 
-    public synchronized void flush(Embedding embedding) {
+    public synchronized void flush(List<Embedding> embeddings) {
         rwLock.writeLock().lock();
         try {
             if (inMem.isNeedFlush()) {
@@ -35,13 +38,19 @@ public class StorageManager implements IEmbeddingKeeper {
         }
 
         // Кладем Embedding, из-за которого мы до этого выходили за границы размера. После флаша он должен влезть.
-        inMem.add(embedding);
+        inMem.add(embeddings);
     }
 
 
     @Override
     public Embedding get(long id) {
         return inMem.get(id);
+    }
+
+    @Override
+    public List<Embedding> get(List<Long> ids) {
+        // TODO
+        return null;
     }
 
     @Override
@@ -53,6 +62,11 @@ public class StorageManager implements IEmbeddingKeeper {
             rwLock.readLock().unlock();
         }
 
+    }
+
+    @Override
+    public void add(List<Embedding> embeddings) {
+        // TODO
     }
 
     public record Config(int flushThresholdBytes) {

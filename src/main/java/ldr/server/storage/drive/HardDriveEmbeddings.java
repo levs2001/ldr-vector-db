@@ -35,6 +35,16 @@ public class HardDriveEmbeddings implements IHardDriveEmbeddings {
     }
 
     @Override
+    public void add(Embedding embedding) {
+
+    }
+
+    @Override
+    public void add(List<Embedding> embeddings) {
+
+    }
+
+    @Override
     public void save(Iterator<Embedding> embeddingIterator) {
 
     }

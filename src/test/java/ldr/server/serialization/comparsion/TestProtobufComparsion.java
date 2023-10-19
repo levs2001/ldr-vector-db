@@ -7,11 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Random;
 
 import org.junit.jupiter.api.Test;
 
@@ -20,9 +16,9 @@ import ldr.server.serialization.my.DataEncoder;
 import ldr.server.serialization.my.EmbeddingEncoder;
 import ldr.server.serialization.protobuf.ProtobufEmbeddingEncoder;
 
+import static ldr.server.TestUtils.generateManyEmbeddings;
+
 public class TestProtobufComparsion {
-    private static final int seed = 10;
-    private static final Random rand = new Random(seed);
     private static final int embeddingsCount = 100_000;
     private static final int maxDim = 100;
     private static final int maxMetaSize = 10;
@@ -63,7 +59,6 @@ public class TestProtobufComparsion {
                               long bytesSize, long elapsedNanos) {
         System.out.printf("Realization: %s%n", implName);
         System.out.println("Input data was: ");
-        System.out.printf("Seed: %d%n", seed);
         System.out.printf("Embeddings count: %d%n", embeddingsCount);
         System.out.printf("Max dimension: %d%n", maxDim);
         System.out.printf("Max metas map size: %d%n", maxMetaSize);
@@ -79,37 +74,5 @@ public class TestProtobufComparsion {
         System.out.printf("Time in nanos: %d%n", elapsedNanos);
         System.out.printf("Time in millis: %d%n", elapsedNanos / 1_000_000);
         System.out.printf("Time in seconds: %d%n", elapsedNanos / 1_000_000_000);
-    }
-
-    private List<Embedding> generateManyEmbeddings(int count, int maxDimension, int maxMetaSize) {
-        List<Embedding> result = new ArrayList<>();
-
-        for (int i = 0; i < count; i++) {
-            result.add(new Embedding(i, generateVector(i % maxDimension), generateMeta(i % maxMetaSize)));
-        }
-
-        return result;
-    }
-
-    private double[] generateVector(int dimension) {
-        double[] vector = new double[dimension];
-        for (int i = 0; i < dimension; i++) {
-            vector[i] = rand.nextDouble();
-        }
-
-        return vector;
-    }
-
-    private Map<String, String> generateMeta(int size) {
-        Map<String, String> meta = new HashMap<>();
-
-        for (int i = 0; i < size; i++) {
-            meta.put(
-                    ("key" + i).repeat(i),
-                    ("val" + i).repeat(i)
-            );
-        }
-
-        return meta;
     }
 }
