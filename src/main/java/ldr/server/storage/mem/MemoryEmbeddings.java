@@ -1,13 +1,13 @@
 package ldr.server.storage.mem;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import ldr.client.domen.Embedding;
 
@@ -32,33 +32,26 @@ public class MemoryEmbeddings implements IMemoryEmbeddings {
         this.flushCallback = flushCallback;
     }
 
-    private static int getEmbeddingsSize(Embedding embedding) {
-        // TODO: Учитывать  мету, либо сюда передавать embeddings без меты (разделить классы)
-        // TODO: Учитывать размер хедера
-        return Long.BYTES + embedding.vector().length * Double.SIZE;
-    }
-
     @Override
     public void add(Embedding embedding) {
-        int size = getEmbeddingsSize(embedding);
-        if (embeddingsByteSize.addAndGet(size) > flushThresholdBytes) {
-            flushCallback.accept(List.of(embedding));
-        } else {
-            embeddingsMap.put(embedding.id(), embedding);
-        }
+        add(embedding, () -> List.of(embedding));
     }
 
     @Override
     public void add(List<Embedding> embeddings) {
-        // TODO: Add common add with lambda, not dupblicate code.
         for (int i = 0; i < embeddings.size(); i++) {
-            Embedding embedding = embeddings.get(i);
-            int size = getEmbeddingsSize(embedding);
-            if (embeddingsByteSize.addAndGet(size) > flushThresholdBytes) {
-                flushCallback.accept(embeddings.subList(i, embeddings.size()));
-            } else {
-                embeddingsMap.put(embedding.id(), embedding);
-            }
+            // Final for lambda.
+            final int current = i;
+            add(embeddings.get(i), () -> embeddings.subList(current, embeddings.size()));
+        }
+    }
+
+    private void add(Embedding embedding, Supplier<List<Embedding>> subListLambda) {
+        int size = getEmbeddingsSize(embedding);
+        if (embeddingsByteSize.addAndGet(size) > flushThresholdBytes) {
+            flushCallback.accept(subListLambda.get());
+        } else {
+            embeddingsMap.put(embedding.id(), embedding);
         }
     }
 
@@ -88,5 +81,11 @@ public class MemoryEmbeddings implements IMemoryEmbeddings {
     @Override
     public boolean isNeedFlush() {
         return embeddingsByteSize.get() > flushThresholdBytes;
+    }
+
+    private static int getEmbeddingsSize(Embedding embedding) {
+        // TODO: Учитывать  мету, либо сюда передавать embeddings без меты (разделить классы)
+        // TODO: Учитывать размер хедера
+        return Long.BYTES + embedding.vector().length * Double.SIZE;
     }
 }
