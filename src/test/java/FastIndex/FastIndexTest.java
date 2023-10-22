@@ -1,68 +1,95 @@
 package FastIndex;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import ldr.client.domen.Embedding;
 import ldr.server.storage.FastIndex;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-import java.util.Map;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 class FastIndexTest {
     @Test
-    public void testFastIndex() {
+    public void testFastIndex() throws IOException {
+        int embeddingsCount = 100;
+        int maxDim = 10;
+        int maxMetaSize = 5;
 
-        List<Embedding> examples = List.of(
-                new Embedding(1, new double[]{11.0, 12.5, 13.0},
-                        Map.of("color", "red", "size", "small")),
-                new Embedding(2, new double[]{11.1, 12.6, 13.2},
-                        Map.of("color", "blue", "size", "big")),
-                new Embedding(3, new double[]{11.3, 12.1, 13.1},
-                        Map.of("color", "red", "size", "big")),
-                new Embedding(4, new double[]{-1000, -1111, -1111},
-                        Map.of("color", "blue", "size", "small")),
-                new Embedding(5, new double[]{-1001, -1112, -1114},
-                        Map.of("color", "red", "size", "big")),
-                new Embedding(6, new double[]{-1001, -1113, -1113},
-                        Map.of("color", "red", "size", "big")),
-                new Embedding(7, new double[]{100000, 10000001, 10000002},
-                        Map.of("color", "blue", "size", "big")),
-                new Embedding(8, new double[]{100001, 10000002, 10000003},
-                        Map.of("color", "red", "size", "big")),
-                new Embedding(9, new double[]{100004, 10000005, 10000006},
-                        Map.of("color", "blue", "size", "big")),
-                new Embedding(10, new double[]{100001, 10000007, 10000008},
-                        Map.of("color", "red", "size", "small"))
-        );
+        // генерим эмбеддинги
+        List<Embedding> embeddings = generateManyEmbeddings(embeddingsCount, maxDim, maxMetaSize);
 
-        int buckets = 3;
-        int vectorLen = examples.get(0).vector().length;
+        // класс, +- понимаю, что это лажа
+        FastIndex fi = new FastIndex();
 
-        FastIndex lsh = new FastIndex(buckets, vectorLen, examples);
-        Map<Integer, List<Embedding>> embeddingMap = lsh.getBuckets();
+        // Вычисляем бакеты для сгенеренных эмбеддингов
+        Map<Integer, List<Long>> embeddingMap = fi.calcaulateLoadBuckets(embeddings);
 
         embeddingMap.forEach((key, value) -> {
-            System.out.println("Бакет: " + key + ", Значение: " + value);
+            System.out.println("Bucket: " + key + ", Ids: " + value);
         });
 
+        String filePath = "data.json";
 
-        double[] vector = {-1001, -1001, -1001};
-        List<Embedding> listEmbeddings = lsh.getNearest(vector, embeddingMap);
+        // Запись Map в JSON-файл
+        writeMapToJsonFile(embeddingMap, filePath);
+        System.out.println("Map has been written to " + filePath);
 
-        listEmbeddings.forEach(embedd -> {
-            System.out.println(embedd);
-        });
+        // Вычисляем бакет для sample и выводим его соседей
+        double[] sample = {1.2, 1.7, 2.56, 1000.1, 23.2, 1.2, 1.7, 2.56, 1000.1, 23.2};
+        List<Long> nearestIds = fi.getNearest(sample);
+        System.out.println("\n" + "Input vector " + Arrays.toString(sample) + "\n" + "Nearest Ids " + nearestIds);
 
-        List<Embedding> examplesNearest = List.of(
-                new Embedding(4, new double[]{-1000, -1111, -1111},
-                        Map.of("color", "blue", "size", "small")),
-                new Embedding(5, new double[]{-1001, -1112, -1114},
-                        Map.of("color", "red", "size", "big")),
-                new Embedding(6, new double[]{-1001, -1113, -1113},
-                        Map.of("color", "red", "size", "big")));
+        // Для теста, хз как создат List<Long> сразу, он все подчеркивает, костыль через цикл.
+        long[] numbers = {4, 5, 9, 10, 12, 13, 18, 19, 24, 27, 30, 32, 34, 41, 42, 44, 45, 48,
+                51, 52, 53, 55, 63, 68, 79, 80, 81, 82, 86, 89, 90, 93, 94, 95, 97, 98};
 
-        assertEquals(listEmbeddings, examplesNearest);
+        List<Long> actualIds = new ArrayList<>();
+        for (long number : numbers) {
+            actualIds.add(number);
+        }
 
+        assertEquals(nearestIds, actualIds);
+
+    }
+    // Запись в json
+    public void writeMapToJsonFile(Map<Integer, List<Long>> data, String filePath) throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.writeValue(new File(filePath), data);
+    }
+
+    // Генератор с теста protobuff, но мета и длинна вектора всега одна и та же.
+    private static final Random rand = new Random(42);
+
+    private List<Embedding> generateManyEmbeddings(int count, int maxDimension, int maxMetaSize) {
+        List<Embedding> result = new ArrayList<>();
+
+        for (int i = 0; i < count; i++) {
+            result.add(new Embedding(i, generateVector(maxDimension), generateMeta(maxMetaSize)));
+        }
+        return result;
+    }
+
+    private double[] generateVector(int dimension) {
+        double[] vector = new double[dimension];
+        for (int i = 0; i < dimension; i++) {
+            vector[i] = rand.nextDouble();
+        }
+        return vector;
+    }
+
+    private Map<String, String> generateMeta(int size) {
+        Map<String, String> meta = new HashMap<>();
+
+        for (int i = 0; i < size; i++) {
+            meta.put(
+                    ("key" + i).repeat(i),
+                    ("val" + i).repeat(i)
+            );
+        }
+        return meta;
     }
 }
