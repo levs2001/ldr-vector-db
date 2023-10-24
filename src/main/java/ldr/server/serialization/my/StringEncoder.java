@@ -1,5 +1,6 @@
 package ldr.server.serialization.my;
 
+import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
@@ -13,6 +14,16 @@ public class StringEncoder implements DataEncoder<String> {
     public DecodeResult<String> decode(byte[] bytes, int from) {
         DecodeResult<Integer> strSizeDecode = intCoder.decode(bytes, from);
         String str = new String(bytes, from + strSizeDecode.bytesCount(), strSizeDecode.result(), charset);
+
+        return new DecodeResult<>(str, strSizeDecode.bytesCount() + strSizeDecode.result());
+    }
+
+    @Override
+    public DecodeResult<String> decode(ByteBuffer byteBuffer, int from) {
+        DecodeResult<Integer> strSizeDecode = intCoder.decode(byteBuffer, from);
+        byte[] strBytes = new byte[strSizeDecode.result()];
+        byteBuffer.get(from + strSizeDecode.bytesCount(), strBytes);
+        String str = new String(strBytes, charset);
 
         return new DecodeResult<>(str, strSizeDecode.bytesCount() + strSizeDecode.result());
     }

@@ -1,5 +1,6 @@
 package ldr.server.serialization.protobuf;
 
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 import org.apache.commons.lang3.NotImplementedException;
@@ -33,6 +34,11 @@ public class ProtobufEmbeddingEncoder implements DataEncoder<Embedding> {
 
     @Override
     public DecodeResult<Embedding> decode(byte[] bytes, int from) {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public DecodeResult<Embedding> decode(ByteBuffer byteBuffer, int from) {
         throw new NotImplementedException();
     }
 

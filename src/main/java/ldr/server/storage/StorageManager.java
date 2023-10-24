@@ -71,4 +71,12 @@ public class StorageManager implements IEmbeddingKeeper {
 
     public record Config(int flushThresholdBytes) {
     }
+
+    public static Embedding createGrave(long id) {
+        return new Embedding(id, null, null);
+    }
+
+    public static boolean isGrave(Embedding embedding) {
+        return embedding.vector() == null && embedding.metas() == null;
+    }
 }

@@ -1,12 +1,14 @@
 package ldr.server.serialization.my;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import ldr.client.domen.Embedding;
 
-public class EmbeddingEncoder implements DataEncoder<Embedding> {
+public class EmbeddingEncoder extends AbstractDataEncoder<Embedding> {
     private static final DataEncoder<Long> longCoder = new VarLongEncoder();
     private static final DataEncoder<double[]> vectorCoder = new VectorEncoder();
     private static final DataEncoder<Map<String, String>> metaCoder = new StringMapEncoder();
@@ -32,6 +34,19 @@ public class EmbeddingEncoder implements DataEncoder<Embedding> {
         var vecDec = vectorCoder.decode(bytes, offset);
         offset += vecDec.bytesCount();
         var metaDec = metaCoder.decode(bytes, offset);
+        offset += metaDec.bytesCount();
+
+        return new DecodeResult<>(new Embedding(idDec.result(), vecDec.result(), metaDec.result()), offset);
+    }
+
+    @Override
+    public DecodeResult<Embedding> decode(ByteBuffer byteBuffer, int from) {
+        int offset = from;
+        var idDec = longCoder.decode(byteBuffer, offset);
+        offset += idDec.bytesCount();
+        var vecDec = vectorCoder.decode(byteBuffer, offset);
+        offset += vecDec.bytesCount();
+        var metaDec = metaCoder.decode(byteBuffer, offset);
         offset += metaDec.bytesCount();
 
         return new DecodeResult<>(new Embedding(idDec.result(), vecDec.result(), metaDec.result()), offset);
