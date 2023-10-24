@@ -74,6 +74,7 @@ class HardDriveEmbeddingsTest {
             for (int i = 0; i < 20; i++) {
                 toRemove.add(randomInt(uploaded.size()));
             }
+            toRemove.sort(Integer::compareTo);
 
             List<Embedding> graves = toRemove.stream()
                     .map(i -> StorageManager.createGrave(uploaded.get(i).id())).toList();

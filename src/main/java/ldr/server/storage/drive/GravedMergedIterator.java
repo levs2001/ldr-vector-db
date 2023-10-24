@@ -23,7 +23,7 @@ public class GravedMergedIterator implements Iterator<Embedding> {
     @Override
     public boolean hasNext() {
         if (next == null) {
-            next = tryGetNext();
+            next = withSkippedGraves();
         }
 
         return next != null;
@@ -40,29 +40,32 @@ public class GravedMergedIterator implements Iterator<Embedding> {
         return ans;
     }
 
-    private Embedding tryGetNext() {
-        if (out.hasNext() && in.hasNext() && out.peek().id() == in.peek().id()) {
-            // Drop duplicate. Priority for inPeek.
-            in.next();
-            // If it was grave we just drop it.
-            skipGraves(out);
+    private Embedding withSkippedGraves() {
+        Embedding result = null;
+        while ((out.hasNext() || in.hasNext()) && StorageManager.isGrave(result = getNext())) {
+            // Действие происходит в проверке условия.
         }
 
+        return result == null || StorageManager.isGrave(result) ? null : result;
+    }
+
+    private Embedding getNext() {
         if (!out.hasNext()) {
             return in.next();
         }
 
         if (!in.hasNext()) {
-            skipGraves(out);
-            return out.hasNext() ? out.next() : null;
+            return out.next();
         }
+
+        if (out.peek().id() == in.peek().id()) {
+            // Drop duplicate. Priority for outPeek.
+            System.out.println("Duplicate" + in.peek().id());
+            in.next();
+            return out.next();
+        }
+
 
         return out.peek().id() < in.peek().id() ? out.next() : in.next();
-    }
-
-    private static void skipGraves(PeekIterator iter) {
-        while (iter.hasNext() && StorageManager.isGrave(iter.peek())) {
-            iter.next();
-        }
     }
 }
