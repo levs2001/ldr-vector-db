@@ -26,7 +26,6 @@ import ldr.server.serialization.my.DataEncoder;
 import ldr.server.serialization.my.EmbeddingEncoder;
 import ldr.server.util.PeekIterator;
 
-// TODO: Log full size after loading
 public class HardDriveEmbeddings implements IHardDriveEmbeddings {
     private static final Logger log = LoggerFactory.getLogger(HardDriveEmbeddings.class);
     private static final String OFFSETS_FILENAME = "offsets.off";

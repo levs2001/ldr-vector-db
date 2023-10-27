@@ -20,15 +20,17 @@ public class MemoryEmbeddings implements IMemoryEmbeddings {
     private final AtomicInteger embeddingsByteSize = new AtomicInteger();
 
     private final int flushThresholdBytes;
+    private final int metaEntrySize;
+
     private final Consumer<List<Embedding>> flushCallback;
 
     /**
-     * @param flushThresholdBytes - byte size after which we should call flushCallback.
      * @param flushCallback       - callback function which we call after overflowing the threshold.
      *                            We pass the embeddings that should make the overflow in that function.
      */
-    public MemoryEmbeddings(int flushThresholdBytes, Consumer<List<Embedding>> flushCallback) {
-        this.flushThresholdBytes = flushThresholdBytes;
+    public MemoryEmbeddings(Config config, Consumer<List<Embedding>> flushCallback) {
+        this.flushThresholdBytes = config.flushThresholdBytes;
+        this.metaEntrySize = config.metaEntrySize;
         this.flushCallback = flushCallback;
     }
 
@@ -40,16 +42,16 @@ public class MemoryEmbeddings implements IMemoryEmbeddings {
     @Override
     public void add(List<Embedding> embeddings) {
         for (int i = 0; i < embeddings.size(); i++) {
-            // Final for lambda.
+            // Final for sublist supplier.
             final int current = i;
             add(embeddings.get(i), () -> embeddings.subList(current, embeddings.size()));
         }
     }
 
-    private void add(Embedding embedding, Supplier<List<Embedding>> subListLambda) {
+    private void add(Embedding embedding, Supplier<List<Embedding>> subList) {
         int size = getEmbeddingsSize(embedding);
         if (embeddingsByteSize.addAndGet(size) > flushThresholdBytes) {
-            flushCallback.accept(subListLambda.get());
+            flushCallback.accept(subList.get());
         } else {
             embeddingsMap.put(embedding.id(), embedding);
         }
@@ -83,9 +85,16 @@ public class MemoryEmbeddings implements IMemoryEmbeddings {
         return embeddingsByteSize.get() > flushThresholdBytes;
     }
 
-    private static int getEmbeddingsSize(Embedding embedding) {
-        // TODO: Учитывать  мету, либо сюда передавать embeddings без меты (разделить классы)
-        // TODO: Учитывать размер хедера
-        return Long.BYTES + embedding.vector().length * Double.SIZE;
+    private int getEmbeddingsSize(Embedding embedding) {
+        // 16 - размер заголовкаа объекта (у  нас заголовок Embedding и мапы)
+        return Long.BYTES + embedding.vector().length * Double.BYTES + embedding.metas().size() * metaEntrySize + 16 * 2;
+    }
+
+    /**
+     *
+     * @param flushThresholdBytes - размер в байтах, после которого надо вызвать flush
+     * @param metaEntrySize - приближенный размер entry в мете (используется для подсчета размера embedding-а)
+     */
+    public record Config(int flushThresholdBytes, int metaEntrySize) {
     }
 }

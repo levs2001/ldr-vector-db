@@ -23,7 +23,8 @@ class MemoryEmbeddingsTest {
     @Test
     public void testAddAngGetOneByOne() {
         // No flush in this test, so null for callback.
-        IEmbeddingKeeper memoryEmbeddings = new MemoryEmbeddings(100_000, null);
+        IEmbeddingKeeper memoryEmbeddings = new MemoryEmbeddings(
+                new MemoryEmbeddings.Config(100_000, 10), null);
         commonEmbeddings.forEach(memoryEmbeddings::add);
         for (Embedding embedding : commonEmbeddings) {
             Embedding fromMem = memoryEmbeddings.get(embedding.id());
@@ -33,7 +34,8 @@ class MemoryEmbeddingsTest {
 
     @Test
     public void testAddManyAngGetMany() {
-        IEmbeddingKeeper memoryEmbeddings = new MemoryEmbeddings(100_000, null);
+        IEmbeddingKeeper memoryEmbeddings = new MemoryEmbeddings(
+                new MemoryEmbeddings.Config(100_000, 10), null);
         memoryEmbeddings.add(commonEmbeddings);
         List<Long> ids = commonEmbeddings.stream().map(Embedding::id).toList();
         List<Embedding> actual = memoryEmbeddings.get(ids);
@@ -45,7 +47,8 @@ class MemoryEmbeddingsTest {
     public void testFlushCallback() {
         List<Embedding> toFlush = new ArrayList<>();
         // 100 - flush threshold bites. Small count, so we expect flush callback on some step.
-        IMemoryEmbeddings memoryEmbeddings = new MemoryEmbeddings(100, toFlush::addAll);
+        IMemoryEmbeddings memoryEmbeddings = new MemoryEmbeddings(
+                new MemoryEmbeddings.Config(100, 10), toFlush::addAll);
         memoryEmbeddings.add(commonEmbeddings);
 
         assertTrue(memoryEmbeddings.isNeedFlush());

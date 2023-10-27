@@ -1,5 +1,7 @@
 package ldr.server;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -9,6 +11,8 @@ import java.util.Random;
 import ldr.client.domen.Embedding;
 
 public class TestUtils {
+    public static final Path resourcesPath = Paths.get("src", "test", "resources");
+
     private static final int seed = 10;
     private static final Random rand = new Random(seed);
 

@@ -43,7 +43,7 @@ public class GravedMergedIterator implements Iterator<Embedding> {
     private Embedding withSkippedGraves() {
         Embedding result = null;
         while ((out.hasNext() || in.hasNext()) && StorageManager.isGrave(result = getNext())) {
-            // Действие происходит в проверке условия.
+            // Действие происходит в проверке условия. Таким образом мы скипаем могилы.
         }
 
         return result == null || StorageManager.isGrave(result) ? null : result;

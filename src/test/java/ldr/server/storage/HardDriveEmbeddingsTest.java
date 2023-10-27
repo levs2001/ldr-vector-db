@@ -1,29 +1,30 @@
-package ldr.server.storage.drive;
+package ldr.server.storage;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import ldr.client.domen.Embedding;
-import ldr.server.storage.StorageManager;
+import ldr.server.storage.drive.HardDriveEmbeddings;
+import ldr.server.storage.drive.IHardDriveEmbeddings;
 
 import static ldr.server.TestUtils.generateManyEmbeddings;
 import static ldr.server.TestUtils.randomInt;
+import static ldr.server.TestUtils.resourcesPath;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 class HardDriveEmbeddingsTest {
-    private static final Path resourcesPath = Paths.get("src", "test", "resources", "drive");
+    private static final Path drivePath = resourcesPath.resolve("drive");
 
     @Test
     public void testLoading() throws IOException {
@@ -58,13 +59,12 @@ class HardDriveEmbeddingsTest {
             for (var embedding : oldEmb) {
                 if (ArrayUtils.isNotEmpty(embedding.vector())) {
                     // Empty vectors could be equal, it is correct.
-                    assertNotEquals(embedding, driveEmbeddings.get(embedding.id()));
+                    Assertions.assertNotEquals(embedding, driveEmbeddings.get(embedding.id()));
                 }
             }
         });
     }
 
-    // TODO FiXME
     @Test
     public void testGraves() throws IOException {
         testDriveEmbeddings("testGraves", driveEmbeddings -> {
@@ -93,7 +93,7 @@ class HardDriveEmbeddingsTest {
     }
 
     private void testDriveEmbeddings(String testId, WithDriveEmbeddings test) throws IOException {
-        Path location = Files.createTempDirectory(resourcesPath, testId);
+        Path location = Files.createTempDirectory(drivePath, testId);
         IHardDriveEmbeddings driveEmbeddings = HardDriveEmbeddings.load(new HardDriveEmbeddings.Config(location));
 
         test.apply(driveEmbeddings);

@@ -1,7 +1,12 @@
 package ldr.server.storage.mem;
 
-import ldr.server.storage.IStorageEmbeddings;
+import java.util.Iterator;
 
-public interface IMemoryEmbeddings extends IStorageEmbeddings {
+import ldr.client.domen.Embedding;
+import ldr.server.storage.IEmbeddingKeeper;
+
+public interface IMemoryEmbeddings extends IEmbeddingKeeper {
+    Iterator<Embedding> getAll();
+
     boolean isNeedFlush();
 }
