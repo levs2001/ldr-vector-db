@@ -20,11 +20,9 @@ public class FastIndex implements IFastIndex {
     public LSHSuperBit lsh;
     public Path location;
 
-    public record Config(Path location, int VECTOR_LEN){};
-
-    public FastIndex(int VECTOR_LEN, Path location) {
-        this.location = location;
-        this.VECTOR_LEN = VECTOR_LEN;
+    public FastIndex(Config config) {
+        this.location = config.location();
+        this.VECTOR_LEN = config.VECTOR_LEN();
         this.lsh = new LSHSuperBit(STAGES, BUCKETS, VECTOR_LEN, INITIAL_SEED);
     }
 

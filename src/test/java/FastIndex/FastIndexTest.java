@@ -2,6 +2,7 @@ package FastIndex;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ldr.client.domen.Embedding;
+import ldr.server.storage.Config;
 import ldr.server.storage.FastIndex;
 import org.junit.jupiter.api.Test;
 
@@ -23,10 +24,11 @@ class FastIndexTest {
 
         // генерим эмбеддинги
         List<Embedding> embeddings = generateManyEmbeddings(embeddingsCount, maxDim, maxMetaSize);
-
         String pathAsString = "collection_test/test.json";
         Path path = Paths.get(pathAsString);
-        FastIndex fi = new FastIndex(maxDim, path);
+        Config config = new Config(path, maxDim);
+        FastIndex fi = new FastIndex(config);
+
         Embedding embedding = new Embedding(52, new double[]{14.7, 132.5, 133.8, 32.3,14.7, 132.5, 133.8, 32.3,14.7, 132.5},
                 Map.of("color", "green", "size", "large"));
 
