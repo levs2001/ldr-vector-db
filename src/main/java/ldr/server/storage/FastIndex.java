@@ -15,33 +15,27 @@ import java.util.List;
 import java.util.Map;
 
 public class FastIndex implements IFastIndex {
-
     private final static int STAGES = 5;
     private final static int INITIAL_SEED = 42;
     private final LSHSuperBit lsh;
     private final Path location;
-    private final Map<Integer, List<Long>> bucketIdMap;
+    private final Map<Integer, List<Long>> buckets;
 
-    public record Config(Path location, int vectorLen, int bucket) {
+    public static IFastIndex load(Config config) {
+        return new FastIndex(config, loadFromFile(config.location));
     }
 
-    public FastIndex(Config config) {
+    // Use load.
+    private FastIndex(Config config, Map<Integer, List<Long>> buckets) {
         this.location = config.location();
+        this.buckets = buckets;
         this.lsh = new LSHSuperBit(STAGES, config.bucket(), config.vectorLen(), INITIAL_SEED);
-        this.bucketIdMap = load(location);
-    }
-
-
-    private int getBucket(double[] vector) {
-        int[] hash = lsh.hash(vector);
-        int lastBucket = hash.length - 1;
-        return hash[lastBucket];
     }
 
     @Override
     public List<Long> getNearest(double[] vector) {
         int bucket = getBucket(vector);
-        List<Long> listId = bucketIdMap.get(bucket);
+        List<Long> listId = buckets.get(bucket);
 
         if (listId == null) {
             listId = new ArrayList<>();
@@ -49,7 +43,53 @@ public class FastIndex implements IFastIndex {
         return listId;
     }
 
-    private Map<Integer, List<Long>> load(Path location) {
+    @Override
+    public void close() throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.writeValue(new File(String.valueOf(location)), buckets);
+    }
+
+    @Override
+    public void add(Embedding embedding) {
+        double[] vector = embedding.vector();
+        long id = embedding.id();
+        int bucket = getBucket(vector);
+        List<Long> ids = buckets.get(bucket);
+
+        if (ids == null) {
+            ids = new ArrayList<>();
+        }
+
+        ids.add(id);
+        buckets.putIfAbsent(bucket, ids);
+    }
+
+    @Override
+    public void add(List<Embedding> embeddings) {
+        for (Embedding e : embeddings) {
+            add(e);
+        }
+    }
+
+    @Override
+    public void remove(Long id) {
+        for (List<Long> list : buckets.values()) {
+            list.remove(id);
+        }
+    }
+
+    @Override
+    public void remove(List<Long> ids) {
+        ids.forEach(this::remove);
+    }
+
+    private int getBucket(double[] vector) {
+        int[] hash = lsh.hash(vector);
+        int lastBucket = hash.length - 1;
+        return hash[lastBucket];
+    }
+
+    private static Map<Integer, List<Long>> loadFromFile(Path location) {
         ObjectMapper mapper = new ObjectMapper();
 
         if (Files.exists(location)) {
@@ -65,39 +105,6 @@ public class FastIndex implements IFastIndex {
         return new HashMap<>();
     }
 
-    @Override
-    public void close() throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.writeValue(new File(String.valueOf(location)), bucketIdMap);
+    public record Config(Path location, int vectorLen, int bucket) {
     }
-
-    @Override
-    public void add(Embedding embedding) {
-        double[] vector = embedding.vector();
-        long id = embedding.id();
-        int bucket = getBucket(vector);
-        List<Long> ids = bucketIdMap.get(bucket);
-
-        if (ids == null) {
-            ids = new ArrayList<>();
-        }
-
-        ids.add(id);
-        bucketIdMap.putIfAbsent(bucket, ids);
-    }
-
-    @Override
-    public void add(List<Embedding> embeddings) {
-        for (Embedding e : embeddings) {
-            add(e);
-        }
-    }
-
-    @Override
-    public void remove(Long element) {
-        for (List<Long> list : bucketIdMap.values()) {
-            list.remove(element);
-        }
-    }
-
 }
