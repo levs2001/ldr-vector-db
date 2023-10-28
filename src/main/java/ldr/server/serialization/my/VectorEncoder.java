@@ -4,7 +4,6 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 public class VectorEncoder extends AbstractDataEncoder<double[]> {
     DataEncoder<Integer> intCoder = new VarIntEncoder();

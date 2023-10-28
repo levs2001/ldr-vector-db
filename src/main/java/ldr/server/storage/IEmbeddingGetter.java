@@ -3,8 +3,6 @@ package ldr.server.storage;
 import java.util.List;
 
 import ldr.client.domen.Embedding;
-import ldr.server.storage.drive.HardDriveEmbeddings;
-import ldr.server.storage.mem.MemoryEmbeddings;
 
 public interface IEmbeddingGetter {
     /**
