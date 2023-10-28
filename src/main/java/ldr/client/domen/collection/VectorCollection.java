@@ -2,6 +2,7 @@ package ldr.client.domen.collection;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import ldr.client.domen.Embedding;
 import ldr.client.domen.VectorCollectionResult;
