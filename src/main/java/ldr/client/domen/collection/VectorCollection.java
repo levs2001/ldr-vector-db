@@ -25,7 +25,7 @@ public class VectorCollection implements IVectorCollection {
     }
 
     @Override
-    public void add(Collection<Embedding> embeddings) throws CollectionException {
+    public void add(List<Embedding> embeddings) throws CollectionException {
 
     }
 

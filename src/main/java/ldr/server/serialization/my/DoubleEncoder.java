@@ -10,7 +10,11 @@ public class DoubleEncoder implements DataEncoder<Double> {
 
     @Override
     public DecodeResult<Double> decode(byte[] bytes, int from) {
-        ByteBuffer bb = ByteBuffer.wrap(bytes);
-        return new DecodeResult<>(bb.getDouble(from), Double.BYTES);
+        return decode(ByteBuffer.wrap(bytes), from);
+    }
+
+    @Override
+    public DecodeResult<Double> decode(ByteBuffer byteBuffer, int from) {
+        return new DecodeResult<>(byteBuffer.getDouble(from), Double.BYTES);
     }
 }

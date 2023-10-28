@@ -33,4 +33,9 @@ public record Embedding(long id, double[] vector, Map<String, String> metas) {
             return false;  // other is not Embedding
         }
     }
+
+    @Override
+    public String toString() {
+        return String.format("Embedding[id=%d, vector=%s, metas=%s]", id, Arrays.toString(vector), metas);
+    }
 }

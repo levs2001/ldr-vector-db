@@ -5,11 +5,12 @@ import java.util.List;
 
 import ldr.client.domen.Embedding;
 import ldr.client.domen.VectorCollectionResult;
+import ldr.server.storage.IEmbeddingKeeper;
 
 public interface IVectorCollection {
     void add(Embedding embedding) throws CollectionException;
 
-    void add(Collection<Embedding> embeddings) throws CollectionException;
+    void add(List<Embedding> embeddings) throws CollectionException;
 
     void update(long id, Embedding newEmbedding) throws CollectionException;
 
