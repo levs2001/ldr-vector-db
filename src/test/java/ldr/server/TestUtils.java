@@ -3,18 +3,17 @@ package ldr.server;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 import ldr.client.domen.Embedding;
 
 public class TestUtils {
     public static final Path resourcesPath = Paths.get("src", "test", "resources");
-
-    private static final int seed = 10;
-    private static final Random rand = new Random(seed);
 
     public static List<Embedding> generateManyEmbeddings(int count, int maxDimension, int maxMetaSize) {
         return generateManyEmbeddings(count, maxDimension, maxMetaSize, false);
@@ -27,7 +26,13 @@ public class TestUtils {
         List<Embedding> result = new ArrayList<>();
 
         for (int i = 0; i < count; i++) {
-            result.add(new Embedding(serialId ? i : rand.nextInt(), generateVector(i % maxDimension), generateMeta(i % maxMetaSize)));
+            result.add(
+                    new Embedding(
+                            serialId ? i : ThreadLocalRandom.current().nextInt(),
+                            generateVector(i % maxDimension),
+                            generateMeta(i % maxMetaSize)
+                    )
+            );
         }
 
         return result;
@@ -41,13 +46,31 @@ public class TestUtils {
     }
 
     public static int randomInt(int bound) {
-        return rand.nextInt(bound);
+        return ThreadLocalRandom.current().nextInt(bound);
+    }
+
+    public static List<Embedding> getRandomSubList(int subListSize, List<Embedding> list) {
+        if (subListSize > list.size()) {
+            throw new IndexOutOfBoundsException(
+                    String.format("Sublist is bigger then list. sublist size: %d, list size: %d",
+                            subListSize, list.size())
+            );
+        }
+
+        List<Embedding> subList = new ArrayList<>(subListSize);
+        for (int i = 0; i < subListSize; i++) {
+            subList.add(list.get(randomInt(list.size())));
+        }
+
+        subList.sort(Comparator.comparingLong(Embedding::id));
+
+        return subList;
     }
 
     private static double[] generateVector(int dimension) {
         double[] vector = new double[dimension];
         for (int i = 0; i < dimension; i++) {
-            vector[i] = rand.nextDouble();
+            vector[i] = ThreadLocalRandom.current().nextDouble();
         }
 
         return vector;

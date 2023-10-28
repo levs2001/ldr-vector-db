@@ -3,7 +3,6 @@ package ldr.server.storage;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -18,6 +17,7 @@ import ldr.server.storage.drive.HardDriveEmbeddings;
 import ldr.server.storage.drive.IHardDriveEmbeddings;
 
 import static ldr.server.TestUtils.generateManyEmbeddings;
+import static ldr.server.TestUtils.getRandomSubList;
 import static ldr.server.TestUtils.randomInt;
 import static ldr.server.TestUtils.resourcesPath;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -65,25 +65,20 @@ class HardDriveEmbeddingsTest {
         });
     }
 
+    /**
+     * We shouldn't save deleted items. Grave is flag for deleted.
+     */
     @Test
     public void testGraves() throws IOException {
         testDriveEmbeddings("testGraves", driveEmbeddings -> {
             var uploaded = uploadEmbeddings(driveEmbeddings);
-            List<Integer> toRemove = new ArrayList<>();
             // uploadEmbeddings creates 100 embeddings, 20 of them we will delete.
-            for (int i = 0; i < 20; i++) {
-                toRemove.add(randomInt(uploaded.size()));
-            }
-            toRemove.sort(Integer::compareTo);
-
+            List<Embedding> toRemove = getRandomSubList(20, uploaded);
             List<Embedding> graves = toRemove.stream()
-                    .map(i -> StorageManager.createGrave(uploaded.get(i).id())).toList();
-            List<Embedding> shouldBeDeleted = toRemove.stream()
-                    .map(uploaded::get).toList();
-
+                    .map(e -> StorageManager.createGrave(e.id())).toList();
             driveEmbeddings.save(graves.iterator());
 
-            uploaded.removeAll(shouldBeDeleted);
+            uploaded.removeAll(toRemove);
             checkEmbeddings(driveEmbeddings, uploaded);
 
             for (Embedding deleted : graves) {

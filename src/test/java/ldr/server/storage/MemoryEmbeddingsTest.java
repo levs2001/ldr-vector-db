@@ -1,4 +1,4 @@
-package ldr.server.storage.mem;
+package ldr.server.storage;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,8 +8,12 @@ import org.junit.jupiter.api.Test;
 
 import ldr.client.domen.Embedding;
 import ldr.server.storage.IEmbeddingKeeper;
+import ldr.server.storage.StorageManager;
+import ldr.server.storage.mem.IMemoryEmbeddings;
+import ldr.server.storage.mem.MemoryEmbeddings;
 
 import static ldr.server.TestUtils.generateManyEmbeddings;
+import static ldr.server.TestUtils.getRandomSubList;
 import static org.junit.jupiter.api.Assertions.*;
 
 class MemoryEmbeddingsTest {
@@ -53,5 +57,21 @@ class MemoryEmbeddingsTest {
 
         assertTrue(memoryEmbeddings.isNeedFlush());
         assertFalse(toFlush.isEmpty());
+    }
+
+    /**
+     * Grave is a flag for delete, but we should return it and keep in memory to know about deleting.
+     * Final deleting will be after saving on drive (graves won't be saved).
+     */
+    @Test
+    public void testGravesInMemory() {
+        IEmbeddingKeeper memoryEmbeddings = new MemoryEmbeddings(
+                new MemoryEmbeddings.Config(100_000, 10), null);
+        memoryEmbeddings.add(commonEmbeddings);
+        var toRemove = getRandomSubList(20, commonEmbeddings);
+        var graves =  toRemove.stream().map(e -> StorageManager.createGrave(e.id())).toList();
+        memoryEmbeddings.add(graves);
+
+        graves.forEach(e -> assertTrue(StorageManager.isGrave(e)));
     }
 }

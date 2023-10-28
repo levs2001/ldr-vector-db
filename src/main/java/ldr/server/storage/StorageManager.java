@@ -19,7 +19,6 @@ import ldr.server.storage.mem.MemoryEmbeddings;
 
 public class StorageManager implements IStorageManager {
     private static final Logger log = LoggerFactory.getLogger(StorageManager.class);
-    private static final int metaEntrySize = 50;
     private final IHardDriveEmbeddings inDrive;
     private final MemoryEmbeddings.Config memConfig;
     private IMemoryEmbeddings inMem;
@@ -39,8 +38,14 @@ public class StorageManager implements IStorageManager {
 
     @Override
     public Embedding get(long id) {
-        Embedding fromMem = inMem.get(id);
-        return fromMem == null ? inDrive.get(id) : fromMem;
+        Embedding result = inMem.get(id);
+        if (result == null) {
+            return inDrive.get(id);
+        } else  if (isGrave(result)) {
+            return null;
+        }
+
+        return result;
     }
 
     @Override

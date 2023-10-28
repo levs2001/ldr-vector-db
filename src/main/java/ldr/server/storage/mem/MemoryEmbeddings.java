@@ -87,7 +87,11 @@ public class MemoryEmbeddings implements IMemoryEmbeddings {
 
     private int getEmbeddingsSize(Embedding embedding) {
         // 16 - размер заголовкаа объекта (у  нас заголовок Embedding и мапы)
-        return Long.BYTES + embedding.vector().length * Double.BYTES + embedding.metas().size() * metaEntrySize + 16 * 2;
+        return Long.BYTES + // Size of long id
+                (embedding.vector() == null ? 0 : embedding.vector().length) * Double.BYTES + // Size of vector
+                (embedding.metas() == null ? 0 : embedding.metas().size()) * metaEntrySize + // Estimated size of meta
+                16 * 2 // header of Embedding and meta
+                ;
     }
 
     /**
