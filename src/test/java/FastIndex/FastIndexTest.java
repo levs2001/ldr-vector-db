@@ -1,12 +1,10 @@
 package FastIndex;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import ldr.client.domen.Embedding;
-import ldr.server.storage.Config;
 import ldr.server.storage.FastIndex;
+import ldr.server.storage.IFastIndex;
 import org.junit.jupiter.api.Test;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -27,17 +25,19 @@ class FastIndexTest {
         String pathAsString = "collection_test/test.json";
         Path path = Paths.get(pathAsString);
 
-        Config config = new Config(path, maxDim);
-        FastIndex fi = new FastIndex(config);
+        FastIndex.Config config = new FastIndex.Config(path, maxDim, 5);
+        IFastIndex fi = new FastIndex(config);
 
         Embedding embedding = new Embedding(52, new double[]{14.7, 132.5, 133.8, 32.3, 14.7, 132.5, 133.8, 32.3, 14.7, 132.5},
                 Map.of("color", "green", "size", "large"));
 
         fi.add(embedding);
         List<Long> nearestIds = fi.getNearest(embedding.vector());
-        System.out.println("\n" + "Input vector " + Arrays.toString(embedding.vector()) + "\n" + "Nearest Ids " + nearestIds);
+        System.out.println("\n" + "Input vector " + Arrays.toString(embedding.vector()) + "\n" + "Nearest ids " + nearestIds);
         fi.add(embeddings);
         fi.remove(90L);
+        fi.close();
+
     }
 
 
