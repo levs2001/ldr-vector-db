@@ -59,8 +59,6 @@ public class GravedMergedIterator implements Iterator<Embedding> {
         }
 
         if (out.peek().id() == in.peek().id()) {
-            // Drop duplicate. Priority for outPeek.
-            System.out.println("Duplicate" + in.peek().id());
             in.next();
             return out.next();
         }
