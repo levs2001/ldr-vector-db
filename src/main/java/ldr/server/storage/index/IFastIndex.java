@@ -1,12 +1,13 @@
-package ldr.server.storage;
+package ldr.server.storage.index;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 
 import ldr.client.domen.Embedding;
 
 public interface IFastIndex {
-    List<Long> getNearest(double[] vector) throws IOException;
+    Set<Long> getNearest(double[] vector);
 
     void add(Embedding embedding);
 

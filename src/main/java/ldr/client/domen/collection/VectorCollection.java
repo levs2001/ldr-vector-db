@@ -6,7 +6,7 @@ import java.util.List;
 import ldr.client.domen.Embedding;
 import ldr.client.domen.VectorCollectionResult;
 import ldr.server.logic.IFilter;
-import ldr.server.storage.IFastIndex;
+import ldr.server.storage.index.IFastIndex;
 import ldr.server.storage.drive.IHardDriveEmbeddings;
 import ldr.server.storage.mem.IMemoryEmbeddings;
 
@@ -25,7 +25,7 @@ public class VectorCollection implements IVectorCollection {
     }
 
     @Override
-    public void add(Collection<Embedding> embeddings) throws CollectionException {
+    public void add(List<Embedding> embeddings) throws CollectionException {
 
     }
 

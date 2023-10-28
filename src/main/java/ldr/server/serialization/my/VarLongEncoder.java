@@ -1,7 +1,9 @@
 package ldr.server.serialization.my;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 public class VarLongEncoder implements DataEncoder<Long> {
     // 10000000
@@ -49,12 +51,21 @@ public class VarLongEncoder implements DataEncoder<Long> {
 
     @Override
     public DecodeResult<Long> decode(byte[] encodedBytes, int from) {
+        return decode(from, encodedBytes.length, i -> encodedBytes[i]);
+    }
+
+    @Override
+    public DecodeResult<Long> decode(ByteBuffer byteBuffer, int from) {
+        return decode(from, byteBuffer.limit(), byteBuffer::get);
+    }
+
+    private DecodeResult<Long> decode(int from, int limit, Function<Integer, Byte> positionGetter) {
         long result = 0;
         byte shift = 0;
 
         int bytesCount;
-        for (bytesCount = 0; bytesCount < encodedBytes.length; bytesCount++) {
-            byte byteValue = encodedBytes[bytesCount + from];
+        for (bytesCount = 0; bytesCount < limit; bytesCount++) {
+            byte byteValue = positionGetter.apply(bytesCount + from);
             // Очищаем бит продолжения и объединяем с результатом
             result |= (long) (byteValue & SEGMENT_BITS) << shift;
 
@@ -76,6 +87,5 @@ public class VarLongEncoder implements DataEncoder<Long> {
         // Раскодирование zig zag
         return new DecodeResult<>((result >> 1) ^ (-(result & 1)), bytesCount);
     }
-
 }
 
