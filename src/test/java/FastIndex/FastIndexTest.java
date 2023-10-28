@@ -26,17 +26,18 @@ class FastIndexTest {
         List<Embedding> embeddings = generateManyEmbeddings(embeddingsCount, maxDim, maxMetaSize);
         String pathAsString = "collection_test/test.json";
         Path path = Paths.get(pathAsString);
+
         Config config = new Config(path, maxDim);
         FastIndex fi = new FastIndex(config);
 
-        Embedding embedding = new Embedding(52, new double[]{14.7, 132.5, 133.8, 32.3,14.7, 132.5, 133.8, 32.3,14.7, 132.5},
+        Embedding embedding = new Embedding(52, new double[]{14.7, 132.5, 133.8, 32.3, 14.7, 132.5, 133.8, 32.3, 14.7, 132.5},
                 Map.of("color", "green", "size", "large"));
 
         fi.add(embedding);
         List<Long> nearestIds = fi.getNearest(embedding.vector());
         System.out.println("\n" + "Input vector " + Arrays.toString(embedding.vector()) + "\n" + "Nearest Ids " + nearestIds);
         fi.add(embeddings);
-
+        fi.remove(90L);
     }
 
 

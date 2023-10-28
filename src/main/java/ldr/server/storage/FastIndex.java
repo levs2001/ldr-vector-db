@@ -19,28 +19,24 @@ public class FastIndex implements IFastIndex {
     public int VECTOR_LEN;
     public LSHSuperBit lsh;
     public Path location;
+    Map<Integer, List<Long>> bucketIdMap;
 
     public FastIndex(Config config) {
         this.location = config.location();
         this.VECTOR_LEN = config.VECTOR_LEN();
         this.lsh = new LSHSuperBit(STAGES, BUCKETS, VECTOR_LEN, INITIAL_SEED);
+        this.bucketIdMap = load(location);
     }
 
 
-    private int getBucket(double[] vector){
+    private int getBucket(double[] vector) {
         int[] hash = lsh.hash(vector);
         int lastBucket = hash.length - 1;
         return hash[lastBucket];
     }
 
-/* Данная функция принимает массив double (vector из embedding), получает номер бакета для него.
-   После чего считывает из json со словарем {bucket -> Список Id} и возвращает  все id данного бакета.
-   Если такого хеша нет в файле, она возвращает пустой список Long.
- */
-
     public List<Long> getNearest(double[] vector) throws IOException {
         int bucket = getBucket(vector);
-        Map<Integer, List<Long>> bucketIdMap = load(location);
         List<Long> listId = bucketIdMap.get(bucket);
 
         if (listId == null) {
@@ -49,13 +45,14 @@ public class FastIndex implements IFastIndex {
         return listId;
     }
 
-    private static Map<Integer, List<Long>> load(Path location) {
+    private Map<Integer, List<Long>> load(Path location) {
         ObjectMapper mapper = new ObjectMapper();
 
         if (Files.exists(location)) {
             try {
                 File jsonFile = location.toFile();
-                Map<Integer, List<Long>> data = mapper.readValue(jsonFile, new TypeReference<>() {});
+                Map<Integer, List<Long>> data = mapper.readValue(jsonFile, new TypeReference<>() {
+                });
                 return data;
             } catch (IOException e) {
                 e.printStackTrace();
@@ -70,7 +67,6 @@ public class FastIndex implements IFastIndex {
     }
 
     public void add(Embedding embedding) throws IOException {
-        Map<Integer, List<Long>> bucketIdMap = load(location);
         double[] vector = embedding.vector();
         long id = embedding.id();
         int bucket = getBucket(vector);
@@ -86,7 +82,16 @@ public class FastIndex implements IFastIndex {
     }
 
     public void add(List<Embedding> embeddings) throws IOException {
-        for (Embedding e : embeddings) {add(e);}
+        for (Embedding e : embeddings) {
+            add(e);
+        }
+    }
+
+    public void remove(Long element) throws IOException {
+        for (List<Long> list : bucketIdMap.values()) {
+            list.remove(element);
+        }
+        close(bucketIdMap, location);
     }
 
 }

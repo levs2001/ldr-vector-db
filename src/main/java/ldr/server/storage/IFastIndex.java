@@ -1,22 +1,28 @@
 package ldr.server.storage;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
 import ldr.client.domen.Embedding;
 
 public interface IFastIndex {
-    // Static methods in interfaces should have a body, alt + enter вставил тело через idea.
-    // Хз зачем ему тело, ну по идее пусть  лучше будут static мы же экземпляры генерить не будем
 
-    static List<Long> getNearest(double[] vector) throws IOException {
+    List<Long> getNearest(double[] vector) throws IOException;
+
+    private Map<Integer, List<Long>> load(Path location) {
         return null;
     }
 
-    private static Map<Integer, List<Long>> readMapFromJsonFile(String filePath) throws IOException {
-        return null;
+    private void close(Map<Integer, List<Long>> data, Path location) throws IOException {
+
     }
 
+    void add(Embedding embedding) throws IOException;
+
+    void add(List<Embedding> embeddings) throws IOException;
+
+    void remove(Long element) throws IOException;
 
 }
