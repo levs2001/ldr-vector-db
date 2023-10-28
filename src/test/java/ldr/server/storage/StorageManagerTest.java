@@ -56,6 +56,7 @@ class StorageManagerTest {
         List<Long> toDelete = getRandomSubList(20, added).stream().map(Embedding::id).toList();
         storage.delete(toDelete);
         toDelete.forEach(id -> assertNull(storage.get(id)));
+        FileUtils.deleteDirectory(location.toFile());
     }
 
     private void testConcurrent(int flushThresholdBytes, String testId) throws IOException, InterruptedException {
@@ -71,6 +72,7 @@ class StorageManagerTest {
         executors.shutdown();
         boolean done = executors.awaitTermination(5000, TimeUnit.MILLISECONDS);
         assertTrue(done, "Timeout in test concurrent");
+        FileUtils.deleteDirectory(location.toFile());
     }
 
     public void testAddAndGet(int flushThresholdBytes, String testId) throws IOException {
