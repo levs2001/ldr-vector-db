@@ -20,12 +20,12 @@ public class DataBase implements IDataBase {
     }
 
     @Override
-    public void createCollection(String name, int dimension, Metric metric) throws DataBaseException {
+    public void createCollection(String name, int vectorLen, Metric metric) throws DataBaseException {
         // Проверка на то, что такой коллекции нет, если есть выкидываем exception
 
         // В файловой системе создается новая папка с таким name
         // В этой папке будет мета файл
-        // В мета файле прописываем размер векторов (dimension)
+        // В мета файле прописываем размер векторов (vectorLen)
         // Метрику
         //
     }

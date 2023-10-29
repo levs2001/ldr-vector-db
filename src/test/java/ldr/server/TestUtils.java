@@ -7,6 +7,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 import ldr.client.domen.Embedding;
@@ -14,24 +15,41 @@ import ldr.client.domen.Embedding;
 public class TestUtils {
     public static final Path resourcesPath = Paths.get("src", "test", "resources");
 
-    public static List<Embedding> generateManyEmbeddings(int count, int maxDimension, int maxMetaSize) {
-        return generateManyEmbeddings(count, maxDimension, maxMetaSize, false);
+    // Use only for not concurrent tests. For concurrent use ThreadLocalRandom.
+    private static final Random random = new Random(10);
+
+    public static List<Embedding> generateManyEmbeddings(int count, int maxVectorLen, int maxMetaSize) {
+        return generateManyEmbeddings(count, maxVectorLen, maxMetaSize, false);
     }
 
     /**
      * @param serialId - флаг на то, чтобы id были последовательными и начинались с 0.
      */
-    public static List<Embedding> generateManyEmbeddings(int count, int maxDimension, int maxMetaSize, boolean serialId) {
+    public static List<Embedding> generateManyEmbeddings(int count, int maxVectorLen, int maxMetaSize, boolean serialId) {
         List<Embedding> result = new ArrayList<>();
 
         for (int i = 0; i < count; i++) {
             result.add(
                     new Embedding(
                             serialId ? i : ThreadLocalRandom.current().nextInt(),
-                            generateVector(i % maxDimension),
+                            generateVector(i % maxVectorLen),
                             generateMeta(i % maxMetaSize)
                     )
             );
+        }
+
+        return result;
+    }
+
+    /**
+     * Generate near vectors with random id, дельта по каждой координате < coordinateDeltaBound.
+     */
+    public static List<Embedding> generateNearEmbeddings(int count, int vectorLen, double coordinateDeltaBound) {
+        double[] mainVector =  generateVector(vectorLen);
+
+        List<Embedding> result = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            result.add(new Embedding(random.nextInt(), generateNearVector(mainVector, coordinateDeltaBound), null));
         }
 
         return result;
@@ -66,9 +84,18 @@ public class TestUtils {
         return subList;
     }
 
-    private static double[] generateVector(int dimension) {
-        double[] vector = new double[dimension];
-        for (int i = 0; i < dimension; i++) {
+    private static double[] generateNearVector(double[] mainVector, double coordinateDelta) {
+        double[] result = new double[mainVector.length];
+        for (int i = 0; i < result.length; i++) {
+            result[i] = mainVector[i] + random.nextDouble(coordinateDelta);
+        }
+
+        return result;
+    }
+
+    private static double[] generateVector(int vectorLen) {
+        double[] vector = new double[vectorLen];
+        for (int i = 0; i < vectorLen; i++) {
             vector[i] = ThreadLocalRandom.current().nextDouble();
         }
 

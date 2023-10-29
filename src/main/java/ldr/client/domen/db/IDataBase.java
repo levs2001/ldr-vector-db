@@ -3,7 +3,7 @@ package ldr.client.domen.db;
 public interface IDataBase {
     void getCollection(String name) throws DataBaseException;
 
-    void createCollection(String name, int dimension, Metric metric) throws DataBaseException;
+    void createCollection(String name, int vectorLen, Metric metric) throws DataBaseException;
 
     void deleteCollection(String name) throws DataBaseException;
 
