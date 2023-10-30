@@ -49,7 +49,7 @@ public class HardDriveEmbeddings implements IHardDriveEmbeddings {
         this.state = state;
     }
 
-    public static IHardDriveEmbeddings load(Config config) throws IOException {
+    public static HardDriveEmbeddings load(Config config) throws IOException {
         log.info("Loading drive embeddings with config: {}.", config);
         Optional<Integer> generation = Optional.empty();
         if (Files.notExists(config.location())) {
@@ -248,6 +248,11 @@ public class HardDriveEmbeddings implements IHardDriveEmbeddings {
         }
 
         return optionalMax;
+    }
+
+    @Override
+    public void close() throws IOException {
+        // TODO
     }
 
     public record Config(Path location) {}

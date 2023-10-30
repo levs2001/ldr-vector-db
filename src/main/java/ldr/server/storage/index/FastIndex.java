@@ -30,13 +30,13 @@ public class FastIndex implements IFastIndex {
     private final Path location;
     private final List<Map<Integer, Set<Long>>> stageBuckets;
 
-    public static IFastIndex load(Config config) {
-        return new FastIndex(config, loadFromFile(config.location));
+    public static FastIndex load(Config config) {
+        return new FastIndex(config, loadFromFile(config.filePath));
     }
 
     // Use load.
     private FastIndex(Config config, List<Map<Integer, Set<Long>>> stageBuckets) {
-        this.location = config.location();
+        this.location = config.filePath();
         this.stageBuckets = stageBuckets;
         this.lsh = new LSHSuperBit(STAGES, BUCKETS, config.vectorLen(), INITIAL_SEED);
     }
@@ -120,6 +120,9 @@ public class FastIndex implements IFastIndex {
         return result;
     }
 
-    public record Config(Path location, int vectorLen) {
+    /**
+     * @param filePath - path of file, where index will be written. Will be written after close, if not presented.
+     */
+    public record Config(Path filePath, int vectorLen) {
     }
 }

@@ -23,7 +23,7 @@ public class StorageManager implements IStorageManager {
     private final MemoryEmbeddings.Config memConfig;
     private IMemoryEmbeddings inMem;
 
-    public static IStorageManager load(Config config) throws IOException {
+    public static StorageManager load(Config config) throws IOException {
         var hardDriveConfig = new HardDriveEmbeddings.Config(config.location);
         IHardDriveEmbeddings inDrive = HardDriveEmbeddings.load(hardDriveConfig);
         return new StorageManager(config.flushThresholdBytes, config.metaEntrySize, inDrive);
@@ -119,6 +119,11 @@ public class StorageManager implements IStorageManager {
 
     public static boolean isGrave(Embedding embedding) {
         return embedding.vector() == null && embedding.metas() == null;
+    }
+
+    @Override
+    public void close() throws IOException {
+        // TODO
     }
 
     @FunctionalInterface

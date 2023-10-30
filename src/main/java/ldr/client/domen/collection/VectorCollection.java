@@ -1,41 +1,82 @@
 package ldr.client.domen.collection;
 
+import java.io.Closeable;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ldr.client.domen.Embedding;
 import ldr.client.domen.VectorCollectionResult;
-import ldr.server.logic.IFilter;
+import ldr.server.storage.IStorageManager;
+import ldr.server.storage.StorageManager;
+import ldr.server.storage.index.FastIndex;
 import ldr.server.storage.index.IFastIndex;
-import ldr.server.storage.drive.IHardDriveEmbeddings;
-import ldr.server.storage.mem.IMemoryEmbeddings;
 
 public class VectorCollection implements IVectorCollection {
-    private IMemoryEmbeddings inMem;
-    private IHardDriveEmbeddings inDrive;
-    private IFastIndex fastIndex;
-    private IFilter filterUtil;
+    private static final Logger log = LoggerFactory.getLogger(VectorCollection.class);
+    private static final String STORAGE_FOLDER = "storage";
+    private static final String INDEX_FILENAME = "index.json";
+    private static final int FLUSH_THRESHOLD_BYTES = 100_000;
+    private static final int META_ENTRY_SIZE = 15;
 
-    // FastHasher (вектор) -> близкие вектора:id
-    // Фильтра
+    private final int vectorLen;
+    private final Closeable[] toClose;
+    private final IStorageManager storage;
+    private final IFastIndex index;
+
+    public static VectorCollection load(Config config) throws IOException {
+        Path location = config.location();
+        if (!Files.exists(location)) {
+            log.info("Can't find snapshot. New collection will be created.");
+            Files.createDirectory(location);
+        } else {
+            log.info("Snapshot found, will be loaded.");
+        }
+
+        var storageConfig =
+                new StorageManager.Config(location.resolve(STORAGE_FOLDER), FLUSH_THRESHOLD_BYTES, META_ENTRY_SIZE);
+
+        IStorageManager storage = StorageManager.load(storageConfig);
+        IFastIndex index = FastIndex.load(new FastIndex.Config(location.resolve(INDEX_FILENAME), config.vectorLen()));
+        Closeable[] toClose = new Closeable[]{storage, index};
+
+        return new VectorCollection(
+                config.vectorLen(),
+                storage,
+                index,
+                toClose
+        );
+    }
+
+    private VectorCollection(int vectorLen, IStorageManager storage, IFastIndex index, Closeable[] toClose) {
+        this.vectorLen = vectorLen;
+        this.storage = storage;
+        this.index = index;
+        this.toClose = toClose;
+    }
 
     @Override
-    public void add(Embedding embedding) throws CollectionException {
+    public void add(Embedding embedding) {
 
     }
 
     @Override
-    public void add(List<Embedding> embeddings) throws CollectionException {
+    public void add(List<Embedding> embeddings) {
 
     }
 
     @Override
-    public void update(long id, Embedding newEmbedding) throws CollectionException {
+    public void update(long id, Embedding newEmbedding) {
 
     }
 
     @Override
-    public void update(List<Long> ids, List<Long> newEmbeddings) throws CollectionException {
+    public void update(List<Long> ids, List<Long> newEmbeddings) {
 
     }
 
@@ -62,23 +103,30 @@ public class VectorCollection implements IVectorCollection {
     }
 
     @Override
-    public void delete(long id) throws CollectionException {
+    public void delete(long id) {
 
     }
 
     @Override
-    public void delete(Collection<Long> ids) throws CollectionException {
+    public void delete(Collection<Long> ids) {
 
     }
 
     @Override
-    public void delete(String filter) throws CollectionException {
+    public void delete(String filter) {
 
     }
 
     @Override
-    public void close() throws CollectionException {
-        // Создаем MemoryEmbeddings
-        // Кладем туда смерженные inMem и inDrive
+    public void close() throws IOException {
+        for (Closeable cl : toClose) {
+            cl.close();
+        }
+    }
+
+    /**
+     * @param location of collection. Will be created if not presented.
+     */
+    public record Config(Path location, int vectorLen){
     }
 }

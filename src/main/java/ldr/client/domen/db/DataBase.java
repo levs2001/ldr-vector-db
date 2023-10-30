@@ -10,7 +10,7 @@ public class DataBase implements IDataBase {
     }
 
     // TODO: Exception if not exists.
-    public static IDataBase load() throws DataBaseException {
+    public static DataBase load() throws DataBaseException {
         return new DataBase();
     }
 
