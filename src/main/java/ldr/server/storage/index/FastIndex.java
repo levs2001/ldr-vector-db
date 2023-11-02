@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -24,11 +25,13 @@ public class FastIndex implements IFastIndex {
     private static final Logger log = LoggerFactory.getLogger(FastIndex.class);
     private static final  int INITIAL_SEED = 42;
     private static final int STAGES = 5;
-    private static final int BUCKETS = 5;
+    private static final int BUCKETS = 15;
 
+    private final ObjectMapper mapper = new ObjectMapper();
     private final LSHSuperBit lsh;
     private final Path location;
     private final List<Map<Integer, Set<Long>>> stageBuckets;
+    private volatile boolean closed;
 
     public static FastIndex load(Config config) {
         return new FastIndex(config, loadFromFile(config.filePath));
@@ -43,6 +46,8 @@ public class FastIndex implements IFastIndex {
 
     @Override
     public Set<Long> getNearest(double[] vector) {
+        checkClosed();
+
         int[] buckets = getBuckets(vector);
 
         Set<Long> nearest = new HashSet<>(stageBuckets.get(0).get(buckets[0]));
@@ -55,13 +60,9 @@ public class FastIndex implements IFastIndex {
     }
 
     @Override
-    public void close() throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.writeValue(new File(String.valueOf(location)), stageBuckets);
-    }
-
-    @Override
     public void add(Embedding embedding) {
+        checkClosed();
+
         int[] buckets = getBuckets(embedding.vector());
         for (int stageN = 0; stageN < buckets.length; stageN++) {
             var stage = stageBuckets.get(stageN);
@@ -81,7 +82,9 @@ public class FastIndex implements IFastIndex {
     }
 
     @Override
-    public void remove(Long id) {
+    public void remove(long id) {
+        checkClosed();
+
         for (var stage : stageBuckets) {
             for (Set<Long> bucket : stage.values()) {
                 bucket.remove(id);
@@ -90,8 +93,26 @@ public class FastIndex implements IFastIndex {
     }
 
     @Override
-    public void remove(List<Long> ids) {
+    public void remove(Collection<Long> ids) {
         ids.forEach(this::remove);
+    }
+
+    @Override
+    public synchronized void flush() throws IOException {
+        mapper.writeValue(location.toFile(), stageBuckets);
+    }
+
+    @Override
+    public void close() throws IOException {
+        checkClosed();
+        closed = true;
+        flush();
+    }
+
+    private void checkClosed() {
+        if (closed) {
+            throw new RuntimeException("Fast index already closed.");
+        }
     }
 
     private int[] getBuckets(double[] vector) {
@@ -100,22 +121,31 @@ public class FastIndex implements IFastIndex {
 
     private static List<Map<Integer, Set<Long>>> loadFromFile(Path location) {
         ObjectMapper mapper = new ObjectMapper();
-
+        List<Map<Integer, Set<Long>>> index = null;
         if (Files.exists(location)) {
             try {
                 File jsonFile = location.toFile();
-                List<Map<Integer, Set<Long>>> index =  mapper.readValue(jsonFile, new TypeReference<>() {
+                index =  mapper.readValue(jsonFile, new TypeReference<>() {
                 });
                 log.info("Index found. Initialization from file.");
-                return index;
             } catch (IOException e) {
                 log.info("Can't find index file, it will be created.");
             }
         }
 
         List<Map<Integer, Set<Long>>> result = new ArrayList<>(STAGES);
-        for (int i = 0; i < STAGES; i++) {
-            result.add(new ConcurrentHashMap<>());
+        if (index != null) {
+            // Такие махинации, чтобы сделать экземпляр не какой-то там мапы и сета при загрузки из json,
+            // а именно Concurrent.
+            for (var stage : index) {
+                ConcurrentHashMap<Integer, Set<Long>> map = new ConcurrentHashMap<>(stage.size());
+                stage.forEach((key, value) -> map.put(key, new ConcurrentSkipListSet<>(value)));
+                result.add(map);
+            }
+        } else {
+            for (int i = 0; i < STAGES; i++) {
+                result.add(new ConcurrentHashMap<>());
+            }
         }
         return result;
     }

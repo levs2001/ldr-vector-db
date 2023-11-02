@@ -53,9 +53,9 @@ class StorageManagerTest {
         IStorageManager storage = StorageManager.load(new StorageManager.Config(location, 5000, metaEntrySize));
         var added = testAddAndGet(storage);
         // testAddAndGet creates 100 embeddings, 20 of them we will delete.
-        List<Long> toDelete = getRandomSubList(20, added).stream().map(Embedding::id).toList();
-        storage.delete(toDelete);
-        toDelete.forEach(id -> assertNull(storage.get(id)));
+        List<Long> toRemove = getRandomSubList(20, added).stream().map(Embedding::id).toList();
+        storage.remove(toRemove);
+        toRemove.forEach(id -> assertNull(storage.get(id)));
         FileUtils.deleteDirectory(location.toFile());
     }
 

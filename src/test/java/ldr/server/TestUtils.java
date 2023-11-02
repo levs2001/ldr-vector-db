@@ -49,7 +49,7 @@ public class TestUtils {
 
         List<Embedding> result = new ArrayList<>();
         for (int i = 0; i < count; i++) {
-            result.add(new Embedding(random.nextInt(), generateNearVector(mainVector, coordinateDeltaBound), null));
+            result.add(new Embedding(random.nextInt(), generateNearVector(mainVector, coordinateDeltaBound), new HashMap<>()));
         }
 
         return result;
@@ -96,7 +96,7 @@ public class TestUtils {
     private static double[] generateVector(int vectorLen) {
         double[] vector = new double[vectorLen];
         for (int i = 0; i < vectorLen; i++) {
-            vector[i] = ThreadLocalRandom.current().nextDouble();
+            vector[i] = ThreadLocalRandom.current().nextDouble(1000.0);
         }
 
         return vector;

@@ -9,7 +9,7 @@ import ldr.client.domen.Embedding;
  * Не умеет удалять, за это отвечает IStorageManager, поскольку процесс удаление нетривиален,
  * используются могилы, как в LSM.
  */
-public interface IEmbeddingKeeper extends IEmbeddingGetter {
+public interface IEmbeddingKeeper {
     void add(Embedding embedding);
     void add(List<Embedding> embeddings);
 }

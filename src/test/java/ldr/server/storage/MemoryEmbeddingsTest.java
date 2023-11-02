@@ -27,7 +27,7 @@ class MemoryEmbeddingsTest {
     @Test
     public void testAddAngGetOneByOne() {
         // No flush in this test, so null for callback.
-        IEmbeddingKeeper memoryEmbeddings = new MemoryEmbeddings(
+        IMemoryEmbeddings memoryEmbeddings = new MemoryEmbeddings(
                 new MemoryEmbeddings.Config(100_000, 10), null);
         commonEmbeddings.forEach(memoryEmbeddings::add);
         for (Embedding embedding : commonEmbeddings) {
@@ -38,7 +38,7 @@ class MemoryEmbeddingsTest {
 
     @Test
     public void testAddManyAngGetMany() {
-        IEmbeddingKeeper memoryEmbeddings = new MemoryEmbeddings(
+        IMemoryEmbeddings memoryEmbeddings = new MemoryEmbeddings(
                 new MemoryEmbeddings.Config(100_000, 10), null);
         memoryEmbeddings.add(commonEmbeddings);
         List<Long> ids = commonEmbeddings.stream().map(Embedding::id).toList();

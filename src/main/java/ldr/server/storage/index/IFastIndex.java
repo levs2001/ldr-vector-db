@@ -1,19 +1,9 @@
 package ldr.server.storage.index;
 
-import java.io.Closeable;
-import java.util.List;
 import java.util.Set;
 
-import ldr.client.domen.Embedding;
+import ldr.server.storage.IHardMemory;
 
-public interface IFastIndex extends Closeable {
+public interface IFastIndex extends IHardMemory {
     Set<Long> getNearest(double[] vector);
-
-    void add(Embedding embedding);
-
-    void add(List<Embedding> embeddings);
-
-    void remove(Long id);
-
-    void remove(List<Long> ids);
 }

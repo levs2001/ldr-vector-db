@@ -18,7 +18,6 @@ import ldr.server.storage.drive.IHardDriveEmbeddings;
 
 import static ldr.server.TestUtils.generateManyEmbeddings;
 import static ldr.server.TestUtils.getRandomSubList;
-import static ldr.server.TestUtils.randomInt;
 import static ldr.server.TestUtils.resourcesPath;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;

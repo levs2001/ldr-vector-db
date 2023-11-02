@@ -31,16 +31,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class FastIndexTest {
     private static final Path indexFolder = resourcesPath.resolve("index");
 
-    @Test // Этот тест немного флапающий. Потому что бакеты рандомно считаются
+    @Test
     public void testNearest() throws IOException {
         Path indexFile = Files.createTempFile(indexFolder, "testWithCloseSimple", null);
 
         int vectorLen = 10;
         // 5 бакетов на 10 групп.
+        // Used without closing, because we don't check saving in this test.
         IFastIndex fastIndex = FastIndex.load(new FastIndex.Config(indexFile, vectorLen));
         List<List<Embedding>> groups = new ArrayList<>(10);
         for (int i = 0; i < 10; i++) {
-            var group = generateNearEmbeddings(1000, vectorLen, 0.3);
+            var group = generateNearEmbeddings(1000, vectorLen, 10);
             groups.add(group);
             fastIndex.add(group);
         }
@@ -52,14 +53,14 @@ public class FastIndexTest {
             Set<Long> nearIds = fastIndex.getNearest(randVectorFromGroup);
             var groupIds = group.stream().map(Embedding::id).collect(Collectors.toSet());
             groupIds.retainAll(nearIds);
-            // Проверяем что хотя бы половина группы близких векторов близка по мнению FastIndex.
-            if (groupIds.size() > group.size() / 2) {
+            // Проверяем что большая часть векторов из группы попала в корзину правильно.
+            if (groupIds.size() > group.size() / 1.5) {
                 correctGroups++;
             }
         }
 
-        // Проверяем, что хотя бы половина групп распределена корректно.
-        assertTrue(correctGroups > groups.size() / 2);
+        // Проверяем, что большая часть групп распределена корректно.
+        assertTrue(correctGroups > groups.size() / 1.5);
 
         Files.delete(indexFile);
     }

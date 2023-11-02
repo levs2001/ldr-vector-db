@@ -8,20 +8,19 @@ import ldr.client.domen.Embedding;
 import ldr.client.domen.VectorCollectionResult;
 
 public interface IVectorCollection extends Closeable {
+    /**
+     * If embedding is already presented, then it will be updated.
+     */
     void add(Embedding embedding);
 
     void add(List<Embedding> embeddings);
 
-    void update(long id, Embedding newEmbedding);
-
-    void update(List<Long> ids, List<Long> newEmbeddings);
-
-    VectorCollectionResult query(List<Double> vector, long maxNeighborsCount);
+    VectorCollectionResult query(double[] vector, int maxNeighborsCount);
 
     /**
      * Own rules for filter, for ex meta1Key:eq:meta1Val
      */
-    VectorCollectionResult query(List<Double> vector, long maxNeighborsCount, String filter);
+    VectorCollectionResult query(double[] vector, int maxNeighborsCount, String filter);
 
     void delete(long id);
 

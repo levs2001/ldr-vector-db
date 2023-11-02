@@ -1,13 +1,17 @@
 package ldr.client.domen.db;
 
+import java.io.IOException;
+
+import ldr.client.domen.collection.IVectorCollection;
+
 public interface IDataBase {
-    void getCollection(String name) throws DataBaseException;
+    IVectorCollection getCollection(String name);
 
-    void createCollection(String name, int vectorLen, Metric metric) throws DataBaseException;
+    void createCollection(String name, int vectorLen) throws IOException;
 
-    void deleteCollection(String name) throws DataBaseException;
+    void removeCollection(String name) throws IOException;
 
-    void renameCollection(String oldName, String newName) throws DataBaseException;
+    void renameCollection(String oldName, String newName);
 
-    void close() throws DataBaseException;
+    void close() throws IOException;
 }
