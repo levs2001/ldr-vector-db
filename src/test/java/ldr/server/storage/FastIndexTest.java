@@ -8,18 +8,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
 
-import ch.qos.logback.core.util.FileUtil;
 import ldr.client.domen.Embedding;
 import ldr.server.storage.index.FastIndex;
 import ldr.server.storage.index.IFastIndex;
 
-import static ldr.server.TestUtils.generateManyEmbeddings;
 import static ldr.server.TestUtils.generateNearEmbeddings;
 import static ldr.server.TestUtils.randomInt;
 import static ldr.server.TestUtils.resourcesPath;
@@ -35,7 +31,7 @@ public class FastIndexTest {
     public void testNearest() throws IOException {
         Path indexFile = Files.createTempFile(indexFolder, "testWithCloseSimple", null);
 
-        int vectorLen = 10;
+        final int vectorLen = 10;
         // 5 бакетов на 10 групп.
         // Used without closing, because we don't check saving in this test.
         IFastIndex fastIndex = FastIndex.load(new FastIndex.Config(indexFile, vectorLen));

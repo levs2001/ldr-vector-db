@@ -78,7 +78,6 @@ public class VectorCollection implements IVectorCollection {
         this.storage = storage;
         this.index = index;
         this.hardMemory = new IHardMemory[]{storage, index};
-
     }
 
     @Override

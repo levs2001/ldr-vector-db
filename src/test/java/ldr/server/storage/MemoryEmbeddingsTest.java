@@ -7,14 +7,14 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import ldr.client.domen.Embedding;
-import ldr.server.storage.IEmbeddingKeeper;
-import ldr.server.storage.StorageManager;
 import ldr.server.storage.mem.IMemoryEmbeddings;
 import ldr.server.storage.mem.MemoryEmbeddings;
 
 import static ldr.server.TestUtils.generateManyEmbeddings;
 import static ldr.server.TestUtils.getRandomSubList;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MemoryEmbeddingsTest {
     private static List<Embedding> commonEmbeddings;

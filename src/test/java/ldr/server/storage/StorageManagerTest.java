@@ -3,7 +3,6 @@ package ldr.server.storage;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -13,11 +12,9 @@ import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
 
 import ldr.client.domen.Embedding;
-import ldr.server.storage.mem.MemoryEmbeddings;
 
 import static ldr.server.TestUtils.generateManyEmbeddings;
 import static ldr.server.TestUtils.getRandomSubList;
-import static ldr.server.TestUtils.randomInt;
 import static ldr.server.TestUtils.resourcesPath;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;

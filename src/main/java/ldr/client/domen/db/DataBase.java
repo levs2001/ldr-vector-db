@@ -17,7 +17,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import ldr.client.domen.collection.IVectorCollection;
 import ldr.client.domen.collection.VectorCollection;
 
-// TODO: make tests.
 public class DataBase implements IDataBase {
     private static final Logger log = LoggerFactory.getLogger(DataBase.class);
     private static final String META_FILENAME = "meta.json";
