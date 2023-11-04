@@ -43,13 +43,25 @@ public class DataBase implements IDataBase {
         this.collections = collections;
     }
 
+    /**
+     * @throws NoSuchElementException, if collection not exists.
+     */
     @Override
     public IVectorCollection getCollection(String name) {
-        return collections.get(name);
+        checkClose();
+
+        IVectorCollection collection = collections.get(name);
+        if (collection == null) {
+            throw new NoSuchElementException("No collection with name: " + name);
+        }
+
+        return collection;
     }
 
     @Override
     public void createCollection(String name, int vectorLen) throws IOException {
+        checkClose();
+
         // Проверка на то, что такой коллекции нет, если есть выкидываем exception
         if (collections.containsKey(name)) {
             throw new KeyAlreadyExistsException("Collection with name " + name + " already exists");
@@ -62,10 +74,11 @@ public class DataBase implements IDataBase {
         log.info("Collection: {} with vector length: {} created.", name, vectorLen);
     }
 
-    // TODO: test it, hardDriveEmbeddings не чистят замапленную память, надо понять проблема ли это.
     @Override
     public void removeCollection(String name) throws IOException {
-        var collection = removeFromMap(name);
+        checkClose();
+
+        var collection = removeFromCollections(name);
         collection.close();
         FileUtils.deleteDirectory(collectionLocations.remove(name).toFile());
         log.info("Removed collection {}.", name);
@@ -73,12 +86,17 @@ public class DataBase implements IDataBase {
 
     @Override
     public void renameCollection(String oldName, String newName) {
-        var collection = removeFromMap(oldName);
+        checkClose();
+
+        var collection = removeFromCollections(oldName);
         collections.put(newName, collection);
+        collectionLocations.put(newName, collectionLocations.remove(oldName));
         log.info("Collection {} renamed to {}.", oldName, newName);
     }
 
-    private IVectorCollection removeFromMap(String name) {
+    private IVectorCollection removeFromCollections(String name) {
+        checkClose();
+
         IVectorCollection collection = collections.remove(name);
         if (collection == null) {
             throw new NoSuchElementException("Can't find collection with name: " + name);
@@ -89,6 +107,7 @@ public class DataBase implements IDataBase {
     @Override
     public void close() throws IOException {
         checkClose();
+
         closed = true;
         for (var collection : collections.values()) {
             collection.close();
