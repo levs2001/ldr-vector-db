@@ -2,5 +2,13 @@ package ldr.client.domen;
 
 import java.util.List;
 
-public record VectorCollectionResult(List<Embedding> results, List<Double> ranks) {
+/**
+ * @param results - distanced embeddings that sorted from small distance to big (small distance goes first).
+ */
+public record VectorCollectionResult(List<DistancedEmbedding> results) {
+    public static final VectorCollectionResult EMPTY = new VectorCollectionResult(null);
+
+    public boolean isEmpty() {
+        return results == null || results.isEmpty();
+    }
 }

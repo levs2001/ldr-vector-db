@@ -1,10 +1,12 @@
 package ldr.client.domen;
 
+import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
 
-public record Embedding(long id, double[] vector, Map<String, String> metas) {
+// TODO: Поддержать null metas. В том числе и в кодерах.
+public record Embedding(long id, @Nonnull double[] vector, @Nonnull Map<String, String> metas) {
     /**
      * The default hashCode in record is bad for double[], because it use object hashCode.
      */

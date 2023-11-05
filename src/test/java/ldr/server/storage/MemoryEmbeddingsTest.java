@@ -7,14 +7,14 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import ldr.client.domen.Embedding;
-import ldr.server.storage.IEmbeddingKeeper;
-import ldr.server.storage.StorageManager;
 import ldr.server.storage.mem.IMemoryEmbeddings;
 import ldr.server.storage.mem.MemoryEmbeddings;
 
 import static ldr.server.TestUtils.generateManyEmbeddings;
 import static ldr.server.TestUtils.getRandomSubList;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MemoryEmbeddingsTest {
     private static List<Embedding> commonEmbeddings;
@@ -27,7 +27,7 @@ class MemoryEmbeddingsTest {
     @Test
     public void testAddAngGetOneByOne() {
         // No flush in this test, so null for callback.
-        IEmbeddingKeeper memoryEmbeddings = new MemoryEmbeddings(
+        IMemoryEmbeddings memoryEmbeddings = new MemoryEmbeddings(
                 new MemoryEmbeddings.Config(100_000, 10), null);
         commonEmbeddings.forEach(memoryEmbeddings::add);
         for (Embedding embedding : commonEmbeddings) {
@@ -38,7 +38,7 @@ class MemoryEmbeddingsTest {
 
     @Test
     public void testAddManyAngGetMany() {
-        IEmbeddingKeeper memoryEmbeddings = new MemoryEmbeddings(
+        IMemoryEmbeddings memoryEmbeddings = new MemoryEmbeddings(
                 new MemoryEmbeddings.Config(100_000, 10), null);
         memoryEmbeddings.add(commonEmbeddings);
         List<Long> ids = commonEmbeddings.stream().map(Embedding::id).toList();

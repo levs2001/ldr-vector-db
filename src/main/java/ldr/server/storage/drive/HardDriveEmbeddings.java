@@ -17,6 +17,7 @@ import java.util.Optional;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +40,6 @@ public class HardDriveEmbeddings implements IHardDriveEmbeddings {
     // Write lock blocks read too. I use write lock during changing state. Read lock for get operations.
     private final ReadWriteLock changeStateLock = new ReentrantReadWriteLock();
 
-
     private final Config config;
     private volatile State state;
 
@@ -49,7 +49,7 @@ public class HardDriveEmbeddings implements IHardDriveEmbeddings {
         this.state = state;
     }
 
-    public static IHardDriveEmbeddings load(Config config) throws IOException {
+    public static HardDriveEmbeddings load(Config config) throws IOException {
         log.info("Loading drive embeddings with config: {}.", config);
         Optional<Integer> generation = Optional.empty();
         if (Files.notExists(config.location())) {
@@ -115,6 +115,10 @@ public class HardDriveEmbeddings implements IHardDriveEmbeddings {
      */
     @Override
     public synchronized void save(Iterator<Embedding> toSaveOut) throws IOException {
+        if (!toSaveOut.hasNext()) {
+            return;
+        }
+
         int newGeneration = state == YET_NOT_INIT_STATE ? 0 : state.generation() + 1;
         Path newGenerationLocation = config.location().resolve(Integer.toString(newGeneration));
         Files.createDirectories(config.location().resolve(Integer.toString(newGeneration)));
@@ -123,12 +127,18 @@ public class HardDriveEmbeddings implements IHardDriveEmbeddings {
         Iterator<Embedding> toSave = getMergedIterator(toSaveOut);
         saveGeneration(toSave, newGenerationLocation);
 
+        int oldGeneration = state.generation;
         changeStateLock.writeLock().lock();
         try {
             // Переключаем стейт
             state = loadGeneration(newGeneration, config.location());
         } finally {
             changeStateLock.writeLock().unlock();
+        }
+        // Переключение прошло гладко, удаляем старый стейт.
+        if (oldGeneration >= 0) {
+            // Можно в отдельном потоке удаление сделать. Если захочется ускорить save.
+            FileUtils.deleteDirectory(config.location().resolve(Integer.toString(oldGeneration)).toFile());
         }
     }
 

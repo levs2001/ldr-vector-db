@@ -22,8 +22,9 @@ public class StorageManager implements IStorageManager {
     private final IHardDriveEmbeddings inDrive;
     private final MemoryEmbeddings.Config memConfig;
     private IMemoryEmbeddings inMem;
+    private volatile boolean closed;
 
-    public static IStorageManager load(Config config) throws IOException {
+    public static StorageManager load(Config config) throws IOException {
         var hardDriveConfig = new HardDriveEmbeddings.Config(config.location);
         IHardDriveEmbeddings inDrive = HardDriveEmbeddings.load(hardDriveConfig);
         return new StorageManager(config.flushThresholdBytes, config.metaEntrySize, inDrive);
@@ -33,11 +34,12 @@ public class StorageManager implements IStorageManager {
     private StorageManager(int flushThresholdBytes, int metaEntrySize, IHardDriveEmbeddings inDrive) {
         this.inDrive = inDrive;
         this.memConfig = new MemoryEmbeddings.Config(flushThresholdBytes, metaEntrySize);
-        this.inMem = new MemoryEmbeddings(memConfig, this::flush);
+        this.inMem = new MemoryEmbeddings(memConfig, this::flushCallback);
     }
 
     @Override
     public Embedding get(long id) {
+        checkClosed();
         Embedding result = inMem.get(id);
         if (result == null) {
             return inDrive.get(id);
@@ -63,6 +65,7 @@ public class StorageManager implements IStorageManager {
 
     @Override
     public void add(Embedding embedding) {
+        checkClosed();
         inMem.add(embedding);
     }
 
@@ -72,31 +75,39 @@ public class StorageManager implements IStorageManager {
     }
 
     @Override
-    public void delete(long id) {
+    public void remove(long id) {
+        checkClosed();
         add(createGrave(id));
     }
 
     @Override
-    public void delete(Collection<Long> ids) {
-        ids.forEach(this::delete);
+    public void remove(Collection<Long> ids) {
+        ids.forEach(this::remove);
     }
 
-    private synchronized void flush(List<Embedding> embeddings) {
+    @Override
+    public void close() throws IOException {
+        checkClosed();
+        closed = true;
+        flush();
+    }
+
+    @Override
+    public synchronized void flush() throws IOException {
+        inDrive.save(inMem.getAll());
+        inMem = new MemoryEmbeddings(memConfig, this::flushCallback);
+    }
+
+    private synchronized void flushCallback(List<Embedding> embeddings) {
         // У нас есть небольшая гонка перед тем, как вызвать этот метод внутри add в StorageEmbeddings,
         // Сейчас мы в последовательном коде и можем еще раз все проверить.
         if (inMem.isNeedFlush()) {
-            boolean flushed = true;
             try {
-                inDrive.save(inMem.getAll());
+                flush();
             } catch (IOException e) {
                 log.error("Exception during flush. Flush is aborted, if flush won't be successful later, " +
                         "then you face flush loop, and add operation won't be work correctly. " +
                         "So get operations could be inconsistent.", e);
-                flushed = false;
-            }
-
-            if (flushed) {
-                inMem = new MemoryEmbeddings(memConfig, (embs) -> handleFlushException(() -> flush(embs)));
             }
         }
 
@@ -104,26 +115,21 @@ public class StorageManager implements IStorageManager {
         inMem.add(embeddings);
     }
 
-    private void handleFlushException(WriteOperation writeOperation) {
-        try {
-            writeOperation.write();
-        } catch (IOException e) {
-            log.error("Error during flush.", e);
+    private void checkClosed() {
+        if (closed) {
+            throw new RuntimeException("Storage manager already closed");
         }
     }
 
+    @SuppressWarnings("ConstantConditions") // null for Nonnullable is correct. It is identification of graves.
     @VisibleForTesting
     static Embedding createGrave(long id) {
         return new Embedding(id, null, null);
     }
 
+    @SuppressWarnings("ConstantConditions")
     public static boolean isGrave(Embedding embedding) {
         return embedding.vector() == null && embedding.metas() == null;
-    }
-
-    @FunctionalInterface
-    interface WriteOperation {
-        void write() throws IOException;
     }
 
     public record Config(Path location, int flushThresholdBytes, int metaEntrySize) {
